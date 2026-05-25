@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Sliders, Activity, Thermometer, Wind, Eye, FileSpreadsheet } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { motion } from "motion/react";
 
 interface AnimatedCounterProps {
   value: number;
@@ -135,27 +136,25 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
     } else {
       onNotifyLog(`Albedo SRM parameters adapted to ${val}%. Calibrating planetary cloud deflection.`, "info");
     }
-  };
-
-  return (
+  };  return (
     <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 h-full">
       {/* Simulation Controls Sidebar */}
-      <div className="xl:col-span-4 bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-sm">
+      <div className="xl:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-2xl">
         <div>
-          <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-2 mb-3">
-            <Sliders className="w-4 h-4 text-blue-600" />
+          <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2 mb-3">
+            <Sliders className="w-4 h-4 text-blue-400" />
             Planetary Sandbox Controls
           </h3>
-          <p className="text-[11px] text-slate-500 leading-relaxed font-sans mb-5">
+          <p className="text-[11px] text-slate-450 leading-relaxed font-sans mb-5">
             Aptara allows active geoengineering simulations. Drag controls to toggle synthetic scrubbing loads and Solar Radiation Management (SRM) to watch trends balance.
           </p>
-
+          
           <div className="space-y-6">
             {/* Control 1: Scrubber load */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="font-sans text-xs text-slate-700 font-medium">Carbon Scrubber Arrays</span>
-                <span className="font-mono text-xs text-blue-600 font-bold">{scrubberLoad}%</span>
+                <span className="font-sans text-xs text-slate-300 font-medium">Carbon Scrubber Arrays</span>
+                <span className="font-mono text-xs text-blue-400 font-bold">{scrubberLoad}%</span>
               </div>
               <input
                 type="range"
@@ -163,9 +162,9 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
                 max="100"
                 value={scrubberLoad}
                 onChange={(e) => handleScrubberChange(Number(e.target.value))}
-                className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                className="w-full h-1.5 bg-slate-850 rounded-lg appearance-none cursor-pointer accent-blue-500"
               />
-              <div className="flex justify-between font-mono text-[9px] text-slate-400">
+              <div className="flex justify-between font-mono text-[9px] text-slate-500">
                 <span>OFFLINE (0%)</span>
                 <span>MAX RECAPTURE (100%)</span>
               </div>
@@ -174,8 +173,8 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
             {/* Control 2: Aerosol SRM and Dust */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="font-sans text-xs text-slate-700 font-medium">Reflective Stratosphere Aerosol (SRM)</span>
-                <span className="font-mono text-xs text-blue-600 font-bold">{srmInjection}%</span>
+                <span className="font-sans text-xs text-slate-300 font-medium">Reflective Stratosphere Aerosol (SRM)</span>
+                <span className="font-mono text-xs text-blue-400 font-bold">{srmInjection}%</span>
               </div>
               <input
                 type="range"
@@ -183,9 +182,9 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
                 max="100"
                 value={srmInjection}
                 onChange={(e) => handleSrmChange(Number(e.target.value))}
-                className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                className="w-full h-1.5 bg-slate-850 rounded-lg appearance-none cursor-pointer accent-blue-500"
               />
-              <div className="flex justify-between font-mono text-[9px] text-slate-400">
+              <div className="flex justify-between font-mono text-[9px] text-slate-500">
                 <span>0 Gt DEPOSITED</span>
                 <span>120 Gt SOLID GRID DEPOSITIONS</span>
               </div>
@@ -194,18 +193,18 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
         </div>
 
         {/* Live Simulator Summary */}
-        <div className="mt-6 pt-4 border-t border-slate-200 space-y-2 font-mono text-[10px]">
+        <div className="mt-6 pt-4 border-t border-slate-800 space-y-2 font-mono text-[10px]">
           <div className="flex justify-between">
-            <span className="text-slate-400 uppercase">FEEDBACK PATH</span>
-            <span className="text-blue-600 font-bold">SIMULATION ACTIVE</span>
+            <span className="text-slate-500 uppercase">FEEDBACK PATH</span>
+            <span className="text-blue-400 font-bold">SIMULATION ACTIVE</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400 uppercase">CO2 SCRUB EFFICIENCY</span>
-            <span className="text-slate-700 font-medium">{(scrubberLoad * 0.94).toFixed(1)} Mt/day</span>
+            <span className="text-slate-500 uppercase">CO2 SCRUB EFFICIENCY</span>
+            <span className="text-slate-300 font-semibold">{(scrubberLoad * 0.94).toFixed(1)} Mt/day</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400 uppercase">ALBEDO SHIFT VALUE</span>
-            <span className="text-slate-700 font-medium">+{ (srmInjection * 0.007).toFixed(3) } avg reflectivity</span>
+            <span className="text-slate-500 uppercase">ALBEDO SHIFT VALUE</span>
+            <span className="text-slate-300 font-semibold">+{ (srmInjection * 0.007).toFixed(3) } avg reflectivity</span>
           </div>
         </div>
       </div>
@@ -215,136 +214,150 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
         {/* Vital Snapshot Panels */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* Card 1: CO2 */}
-          <div className="bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between shadow-sm">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue">
             <span className="font-mono text-[9px] text-slate-450 tracking-wider">ATM ATMOSPHERIC CO2</span>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="font-heading text-xl font-bold text-slate-800">
+              <span className="font-heading text-xl font-bold text-slate-100">
                 <AnimatedCounter value={co2Level} decimals={1} />
               </span>
-              <span className="font-mono text-[10px] text-slate-500">ppm</span>
+              <span className="font-mono text-[10px] text-slate-400">ppm</span>
             </div>
-            <span className={`block text-[9px] font-mono mt-1 font-semibold ${co2Level < 420 ? 'text-emerald-600' : 'text-amber-600'}`}>
+            <span className={`block text-[9px] font-mono mt-1 font-semibold ${co2Level < 420 ? 'text-emerald-400' : 'text-amber-400'}`}>
               {co2Level < 422 ? '▼ ABSORPTION PHASE' : '▲ CONCENTRATION CREEP'}
             </span>
           </div>
 
           {/* Card 2: Thermal Anomalies */}
-          <div className="bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between shadow-sm">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue">
             <span className="font-mono text-[9px] text-slate-450 tracking-wider flex items-center gap-1">
-              <Thermometer className="w-3 h-3 text-red-500" />
+              <Thermometer className="w-3 h-3 text-red-400 animate-pulse" />
               THERMAL SHIFT
             </span>
 
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="font-heading text-xl font-bold text-slate-800">
+              <span className="font-heading text-xl font-bold text-slate-100">
                 <AnimatedCounter value={tempAnomaly} decimals={2} prefix="+" />
               </span>
-              <span className="font-mono text-[10px] text-slate-500">°C</span>
+              <span className="font-mono text-[10px] text-slate-400">°C</span>
             </div>
-            <span className={`block text-[9px] font-mono mt-1 font-semibold ${tempAnomaly < 1.10 ? 'text-emerald-600' : 'text-amber-600'}`}>
+            <span className={`block text-[9px] font-mono mt-1 font-semibold ${tempAnomaly < 1.10 ? 'text-emerald-400' : 'text-amber-400'}`}>
               {tempAnomaly < 1.15 ? '✔ COOLING VECTOR' : '☕ THERMAL ACCRETION'}
             </span>
           </div>
 
           {/* Card 3: Glacier Melt */}
-          <div className="bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between shadow-sm">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue">
             <span className="font-mono text-[9px] text-slate-450 tracking-wider flex items-center gap-1">
-              <Wind className="w-3 h-3 text-blue-500" />
+              <Wind className="w-3 h-3 text-blue-400" />
               POLAR ICE COVERAGE
             </span>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="font-heading text-xl font-bold text-slate-800">
+              <span className="font-heading text-xl font-bold text-slate-100">
                 <AnimatedCounter value={glacialIce} decimals={1} />
               </span>
-              <span className="font-mono text-[10px] text-slate-500">%</span>
+              <span className="font-mono text-[10px] text-slate-400">%</span>
             </div>
-            <span className="block text-[9px] font-mono text-slate-400 mt-1 font-semibold">Ref Baseline 1990</span>
+            <span className="block text-[9px] font-mono text-slate-500 mt-1 font-semibold">Ref Baseline 1990</span>
           </div>
 
           {/* Card 4: Ecosystem stability */}
-          <div className="bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between shadow-sm">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue">
             <span className="font-mono text-[9px] text-slate-450 tracking-wider">ECOSYSTEM HEALTH</span>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="font-heading text-xl font-bold text-slate-800">
+              <span className="font-heading text-xl font-bold text-slate-100">
                 <AnimatedCounter value={biodiversity} decimals={3} />
               </span>
-              <span className="font-mono text-[10px] text-slate-500 font-semibold text-slate-400">index</span>
+              <span className="font-mono text-[10px] text-slate-400 font-semibold">index</span>
             </div>
-            <span className={`block text-[9px] font-mono mt-1 font-bold ${biodiversity > 0.72 ? 'text-emerald-600' : 'text-red-500'}`}>
+            <span className={`block text-[9px] font-mono mt-1 font-bold ${biodiversity > 0.72 ? 'text-emerald-400' : 'text-red-400'}`}>
               {biodiversity > 0.72 ? '● STABILIZED' : '▲ THREAT METRIC'}
             </span>
           </div>
         </div>
 
         {/* Dynamic Interactive Recharts Graph */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 flex-1 h-[240px] md:h-auto flex flex-col justify-between min-h-[220px] shadow-sm">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex-1 h-[240px] md:h-auto flex flex-col justify-between min-h-[220px] shadow-xl">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-2">
-              <Activity className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
+            <h4 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
               Planetary Vector Projection (Simulated Climate Trend)
             </h4>
-            <div className="flex gap-4 font-mono text-[9px] text-slate-400">
+            <div className="flex gap-4 font-mono text-[9px] text-slate-500">
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-1 bg-blue-600 inline-block rounded-xs" /> CO2
+                <span className="w-2.5 h-1 bg-blue-500 inline-block rounded-xs" /> CO2
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-1 bg-amber-600 inline-block rounded-xs" /> TEMP
+                <span className="w-2.5 h-1 bg-amber-500 inline-block rounded-xs" /> TEMP
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-1 bg-emerald-600 inline-block rounded-xs" /> GLACIAL
+                <span className="w-2.5 h-1 bg-emerald-500 inline-block rounded-xs" /> GLACIAL
               </span>
             </div>
           </div>
 
-          <div className="flex-1 min-h-[160px]">
+          <motion.div 
+            className="flex-1 min-h-[160px]"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
             {chartData && chartData.length > 0 && (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity="0.6" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" opacity="0.6" />
                   <XAxis 
                     dataKey="name" 
-                    stroke="#64748b" 
+                    stroke="#475569" 
                     fontSize={8} 
                     fontFamily="monospace"
                     tickLine={false}
                   />
                   <YAxis 
-                    stroke="#64748b" 
+                    stroke="#475569" 
                     fontSize={8} 
                     fontFamily="monospace"
                     tickLine={false}
                     domain={['auto', 'auto']}
                   />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', fontSize: '10px', fontFamily: 'sans-serif', borderRadius: '6px', color: '#0f172a' }}
+                    contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', fontSize: '10px', fontFamily: 'monospace', borderRadius: '6px', color: '#f8fafc' }}
                     labelStyle={{ fontFamily: 'monospace', color: '#64748b' }}
                   />
                   <Line 
                     type="monotone" 
                     dataKey="CO2 Level (ppm)" 
-                    stroke="#2563eb" 
+                    stroke="#3b82f6" 
                     strokeWidth={1.5}
                     dot={false}
                     activeDot={{ r: 4 }}
+                    isAnimationActive={true}
+                    animationDuration={1500}
+                    animationEasing="ease-out"
                   />
                   <Line 
                     type="monotone" 
                     dataKey="Temp Anomaly (°C)" 
-                    stroke="#ea580c" 
+                    stroke="#f97316" 
                     strokeWidth={1.5}
                     dot={false}
+                    isAnimationActive={true}
+                    animationDuration={1500}
+                    animationEasing="ease-out"
                   />
                   <Line 
                     type="monotone" 
                     dataKey="Glacial Ice %" 
-                    stroke="#059669" 
+                    stroke="#10b981" 
                     strokeWidth={1.5}
                     dot={false}
+                    isAnimationActive={true}
+                    animationDuration={1500}
+                    animationEasing="ease-out"
                   />
                 </LineChart>
               </ResponsiveContainer>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>

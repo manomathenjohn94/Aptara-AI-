@@ -283,13 +283,13 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-full">
       {/* Simulation Command Center */}
-      <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-sm">
+      <div className="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-xl">
         <div>
-          <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-2 mb-3">
-            <Layers className="w-4 h-4 text-blue-600" />
+          <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2 mb-3">
+            <Layers className="w-4 h-4 text-blue-400" />
             Crisis Mitigation Orchestrator
           </h3>
-          <p className="text-[11px] text-slate-500 font-sans leading-relaxed mb-4">
+          <p className="text-[11px] text-slate-450 font-sans leading-relaxed mb-4">
             Aptara continuously processes satellite feed anomalies. Toggle automated drone seeders, seismic dampener pulses, and marine filtration lattices instantly to neutralize environmental tipping points.
           </p>
 
@@ -297,7 +297,7 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
             <button
               onClick={handleTriggerCrisis}
               disabled={isSimulating}
-              className="w-full py-2.5 rounded-lg font-mono text-[10px] font-bold bg-red-650 hover:bg-red-700 text-white flex items-center justify-center gap-2 border border-red-700/20 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
+              className="w-full py-2.5 rounded-lg font-mono text-[10px] font-bold bg-rose-650 hover:bg-rose-700 text-white flex items-center justify-center gap-2 border border-rose-700/20 transition-all cursor-pointer disabled:opacity-50 shadow-md"
             >
               {isSimulating ? (
                 <>
@@ -314,27 +314,27 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
 
             <button
               onClick={clearResolved}
-              className="w-full py-2.5 rounded-lg font-mono text-[10px] font-bold bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-750 flex items-center justify-center gap-2 transition-all cursor-pointer"
+              className="w-full py-2.5 rounded-lg font-mono text-[10px] font-bold bg-slate-950 hover:bg-slate-900 border border-slate-850 text-slate-300 flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-slate-600" />
+              <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
               ARCHIVE RESOLVED ALERTS
             </button>
           </div>
         </div>
 
         {/* Tactical status readout */}
-        <div className="pt-4 border-t border-slate-200 font-mono text-[10px] space-y-1.5 mt-6">
+        <div className="pt-4 border-t border-slate-800 font-mono text-[10px] space-y-1.5 mt-6">
           <div className="flex justify-between">
-            <span className="text-slate-400">HAZARD TRIAGE SPEED:</span>
-            <span className="text-emerald-700 font-bold">0.85s response index</span>
+            <span className="text-slate-500">HAZARD TRIAGE SPEED:</span>
+            <span className="text-emerald-400 font-bold">0.85s response index</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">ACTIVE DETECTIONS:</span>
-            <span className="text-amber-600 font-bold">{alerts.filter(x => x.status === "detected").length} current</span>
+            <span className="text-slate-500">ACTIVE DETECTIONS:</span>
+            <span className="text-amber-400 font-bold">{alerts.filter(x => x.status === "detected").length} current</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">MITIGATIONS IN ACTION:</span>
-            <span className="text-blue-600 font-bold animate-pulse">{alerts.filter(x => x.status === "mitigating").length} processing</span>
+            <span className="text-slate-500">MITIGATIONS IN ACTION:</span>
+            <span className="text-blue-400 font-bold animate-pulse">{alerts.filter(x => x.status === "mitigating").length} processing</span>
           </div>
         </div>
       </div>
@@ -344,77 +344,77 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
         
         {/* Active Hazards Section */}
         <div className="flex flex-col gap-3">
-          <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-slate-700 mb-1 px-1">
+          <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-slate-200 mb-1 px-1">
             Active Planetary Risk Ledger
           </h4>
 
           {alerts.length === 0 ? (
-            <div className="bg-slate-50 border border-slate-200 border-dashed rounded-xl p-10 flex flex-col items-center justify-center text-center">
-              <ShieldCheck className="w-10 h-10 text-emerald-500 mb-2 opacity-60" />
-              <span className="font-mono text-xs text-slate-500">Ledger clear: No active planetary crises detected.</span>
+            <div className="bg-slate-955/45 border border-slate-850 border-dashed rounded-xl p-10 flex flex-col items-center justify-center text-center">
+              <ShieldCheck className="w-10 h-10 text-emerald-500 mb-2 opacity-50" />
+              <span className="font-mono text-xs text-slate-400">Ledger clear: No active planetary crises detected.</span>
             </div>
           ) : (
             <div className="space-y-2.5 max-h-[350px] overflow-y-auto pr-1">
               <AnimatePresence initial={false}>
                 {alerts.map((al) => (
                   <motion.div
-                    key={al.id}
-                    initial={{ opacity: 0, y: -12, scale: 0.95, boxShadow: "0 0 0 0px rgba(0,0,0,0)" }}
-                    animate={{ 
-                      opacity: 1, 
-                      y: 0, 
-                      scale: [0.95, 1.04, 0.98, 1],
-                      boxShadow: [
-                        `0 0 0 0px ${getPulseColor(al.severity)}`,
-                        `0 0 0 8px ${getPulseColor(al.severity)}`,
-                        `0 0 0 14px rgba(0,0,0,0)`,
-                        `0 0 0 0px rgba(0,0,0,0)`
-                      ]
-                    }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ 
-                      duration: 0.75, 
-                      times: [0, 0.35, 0.75, 1],
-                      ease: "easeOut"
-                    }}
-                    className={`border rounded-xl p-3.5 transition-all relative overflow-hidden ${
-                      al.status === "resolved" 
-                        ? "bg-emerald-50/40 border-emerald-300 shadow-xs" 
-                        : al.status === "mitigating" 
-                          ? "bg-blue-50/40 border-blue-300 shadow-xs" 
-                          : "bg-white border-slate-200 shadow-sm"
-                    }`}
+                     key={al.id}
+                     initial={{ opacity: 0, y: -12, scale: 0.95, boxShadow: "0 0 0 0px rgba(0,0,0,0)" }}
+                     animate={{ 
+                       opacity: 1, 
+                       y: 0, 
+                       scale: [0.95, 1.04, 0.98, 1],
+                       boxShadow: [
+                         `0 0 0 0px ${getPulseColor(al.severity)}`,
+                         `0 0 0 8px ${getPulseColor(al.severity)}`,
+                         `0 0 0 14px rgba(0,0,0,0)`,
+                         `0 0 0 0px rgba(0,0,0,0)`
+                       ]
+                     }}
+                     exit={{ opacity: 0, width: 0 }}
+                     transition={{ 
+                       duration: 0.75, 
+                       times: [0, 0.35, 0.75, 1],
+                       ease: "easeOut"
+                     }}
+                     className={`border rounded-xl p-3.5 transition-all relative overflow-hidden ${
+                       al.status === "resolved" 
+                         ? "bg-emerald-950/40 border-emerald-900 shadow-xl" 
+                         : al.status === "mitigating" 
+                           ? "bg-blue-950/40 border border-blue-900 shadow-xl" 
+                           : "bg-slate-900 border border-slate-800 shadow-lg"
+                     }`}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3">
                         {al.status === "resolved" ? (
-                          <div className="w-7 h-7 rounded-lg bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-700 flex-shrink-0">
+                          <div className="w-7 h-7 rounded-lg bg-emerald-950 border border-emerald-800 flex items-center justify-center text-emerald-400 flex-shrink-0">
                             <ShieldCheck className="w-4 h-4" />
                           </div>
                         ) : (
-                          <div className="w-7 h-7 rounded-lg bg-red-50 border border-red-200 flex items-center justify-center text-red-600 flex-shrink-0">
+                          <div className="w-7 h-7 rounded-lg bg-red-950 border border-red-900 flex items-center justify-center text-red-400 flex-shrink-0">
                             <Flame className="w-4 h-4" />
                           </div>
                         )}
 
                         <div className="space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
-                             <span className={`font-heading text-xs font-bold ${al.status === "resolved" ? "text-slate-400 line-through" : "text-slate-800"}`}>
+                            <span className={`font-heading text-xs font-bold ${al.status === "resolved" ? "text-slate-500 line-through" : "text-slate-100"}`}>
                               {al.title}
                             </span>
                             <span className={`font-mono text-[8px] px-1.5 rounded uppercase border ${getSeverityBadge(al.severity)}`}>
                               {al.severity}
                             </span>
-                            <span className="font-mono text-[9px] text-slate-450 font-bold uppercase">
+                            <span className="font-mono text-[9px] text-slate-500 font-bold uppercase">
                               [{al.sector}]
                             </span>
                           </div>
-                          <p className={`text-[11px] leading-relaxed font-sans ${al.status === "resolved" ? "text-slate-455 font-normal" : "text-slate-600 font-medium"}`}>
+                          <p className={`text-[11px] leading-relaxed font-sans ${al.status === "resolved" ? "text-slate-400 font-normal" : "text-slate-300 font-medium"}`}>
                             {al.description}
                           </p>
-                          <div className="flex items-center gap-1.5 pt-1 text-[9.5px] font-mono text-slate-400">
-                            <Clock className="w-3 h-3 text-slate-350" />
-                            <span>Detection Time: <span className="font-semibold text-slate-600">{al.detectionTime}</span></span>
+                          <div className="flex items-center gap-1.5 pt-1 text-[9.5px] font-mono text-slate-500">
+                            <Clock className="w-3 h-3 text-slate-650" />
+                            <span>Detection Time: <span className="font-semibold text-slate-400">{al.detectionTime}</span></span>
                           </div>
                         </div>
                       </div>
@@ -451,19 +451,24 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
                           ];
 
                           const strokeColor = al.status === "resolved" 
-                            ? "#059669" 
+                            ? "#10b981" 
                             : al.status === "mitigating" 
-                              ? "#2563eb" 
+                              ? "#3b82f6" 
                               : al.severity === "critical" 
-                                ? "#dc2626" 
+                                ? "#ef4444" 
                                 : al.severity === "high" 
-                                  ? "#ea580c" 
-                                  : "#d97706";
+                                  ? "#f97316" 
+                                  : "#f59e0b";
 
                           return (
-                            <div className="flex flex-col items-center justify-center font-mono bg-slate-50/70 border border-slate-150 p-1.5 rounded-lg w-24 shadow-xs">
-                              <span className="text-[7px] uppercase font-bold text-slate-400 tracking-wider">Risk Index</span>
-                              <div className="w-20 h-6 my-0.5">
+                            <div className="flex flex-col items-center justify-center font-mono bg-slate-950/40 border border-slate-850 p-1.5 rounded-lg w-24 shadow-xs">
+                              <span className="text-[7px] uppercase font-bold text-slate-500 tracking-wider">Risk Index</span>
+                              <motion.div 
+                                className="w-20 h-6 my-0.5"
+                                initial={{ opacity: 0, scale: 0.85 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.5, ease: "easeOut" }}
+                              >
                                 <ResponsiveContainer width="100%" height="100%">
                                   <AreaChart data={sparkChartData}>
                                     <defs>
@@ -479,7 +484,9 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
                                       strokeWidth={1.5}
                                       fill={`url(#sparkGrad-${al.id})`}
                                       dot={false}
-                                      isAnimationActive={false}
+                                      isAnimationActive={true}
+                                      animationDuration={1200}
+                                      animationEasing="ease-out"
                                     />
                                     <Line
                                       type="monotone"
@@ -488,18 +495,20 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
                                       strokeWidth={1.5}
                                       strokeDasharray="2.5 2.5"
                                       dot={false}
-                                      isAnimationActive={false}
+                                      isAnimationActive={true}
+                                      animationDuration={1200}
+                                      animationEasing="ease-out"
                                     />
                                   </AreaChart>
                                 </ResponsiveContainer>
-                              </div>
+                              </motion.div>
                               <div className="flex flex-col items-center gap-0.5 mt-0.5">
-                                <span className={`text-[8.5px] font-bold tracking-tight ${al.status === "resolved" ? "text-emerald-600" : al.status === "mitigating" ? "text-blue-600" : al.severity === "critical" ? "text-red-600 animate-pulse" : "text-amber-600"}`}>
+                                <span className={`text-[8.5px] font-bold tracking-tight ${al.status === "resolved" ? "text-emerald-400" : al.status === "mitigating" ? "text-blue-400" : al.severity === "critical" ? "text-red-400 animate-pulse" : "text-amber-400"}`}>
                                   {al.status === "resolved" ? "0.0%" : `${lastVal.toFixed(1)}%`}
                                 </span>
                                 {al.status !== "resolved" && (
-                                  <span className="text-[6.5px] font-semibold text-slate-400/80 leading-none uppercase tracking-wide flex items-center gap-0.5">
-                                    <span className="w-1 h-1 rounded-full bg-slate-300 animate-pulse" />
+                                  <span className="text-[6.5px] font-semibold text-slate-500/80 leading-none uppercase tracking-wide flex items-center gap-0.5">
+                                    <span className="w-1 h-1 rounded-full bg-slate-500 animate-pulse" />
                                     <span>Proj: {p2.toFixed(0)}%</span>
                                   </span>
                                 )}
@@ -513,28 +522,28 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
                           {al.status === "detected" && (
                             <button
                               onClick={() => handleMitigate(al.id)}
-                              className="px-2.5 py-1.5 sm:px-3 bg-red-600 hover:bg-red-750 text-white rounded font-mono text-[9.5px] font-bold uppercase transition-all cursor-pointer shadow-sm border border-red-700/10"
+                              className="px-2.5 py-1.5 sm:px-3 bg-red-950 hover:bg-red-900 border border-red-800 text-red-200 rounded font-mono text-[9.5px] font-bold uppercase transition-all cursor-pointer shadow-sm"
                             >
                               Mobilize Responders
                             </button>
                           )}
                           
                           {al.status === "mitigating" && (
-                            <span className="text-[10px] font-mono text-blue-600 font-bold flex items-center justify-end gap-1">
+                            <span className="text-[10px] font-mono text-blue-400 font-bold flex items-center justify-end gap-1">
                               <Loader2 className="w-3 h-3 animate-spin" />
                               MITIGATING...
                             </span>
                           )}
     
                           {al.status === "resolved" && (
-                            <span className="text-[10px] font-mono text-emerald-800 font-bold uppercase flex items-center justify-end gap-1 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded animate-bounce" style={{ animationDuration: '3s' }}>
+                            <span className="text-[10px] font-mono text-emerald-450 font-bold uppercase flex items-center justify-end gap-1 bg-emerald-950 border border-emerald-900 px-2 py-0.5 rounded animate-bounce" style={{ animationDuration: '3s' }}>
                               RESOLVED
                             </span>
                           )}
 
                           <button
                             onClick={() => onLocateOnMap?.(al.sector)}
-                            className="inline-flex items-center gap-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-205 rounded font-mono text-[8.5px] font-bold uppercase py-1 px-2.5 transition-all cursor-pointer shadow-xs"
+                            className="inline-flex items-center gap-1 bg-slate-950 hover:bg-slate-900 text-slate-300 hover:text-blue-400 border border-slate-850 rounded font-mono text-[8.5px] font-bold uppercase py-1 px-2.5 transition-all cursor-pointer shadow-xs"
                             title={`Track ${al.sector} coordinates on Sensor Map`}
                           >
                             <MapPin className="w-2.5 h-2.5" />
@@ -547,13 +556,13 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
 
                     {/* Progressive progress bar for active mitigation */}
                     {al.status === "mitigating" && (
-                       <div className="mt-3.5 space-y-1">
+                      <div className="mt-3.5 space-y-1">
                         <div className="flex justify-between text-[9px] font-mono text-slate-500">
                           <span>Aerosol Seeding and Grid Stabilizers active</span>
                           <span>{al.mitigationProgress}% complete</span>
                         </div>
-                        <div className="w-full bg-slate-100 h-1.5 p-0.5 rounded border border-slate-200 overflow-hidden">
-                          <div className="h-full bg-blue-600 rounded-sm" style={{ width: `${al.mitigationProgress}%` }} />
+                        <div className="w-full bg-slate-950 h-1.5 p-0.5 rounded border border-slate-850 overflow-hidden">
+                          <div className="h-full bg-blue-500 rounded-sm" style={{ width: `${al.mitigationProgress}%` }} />
                         </div>
                       </div>
                     )}
@@ -565,16 +574,16 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
         </div>
 
         {/* Historical Crisis Outcomes Archive Section */}
-        <div className="flex flex-col gap-3 border-t border-slate-100 pt-5 mt-2">
+        <div className="flex flex-col gap-3 border-t border-slate-800 pt-5 mt-2">
           <div className="flex items-center justify-between px-1 mb-1">
-            <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
               Historical Crisis Resolution Registry
             </h4>
             {resolvedHistory.length > 0 && (
               <button
                 onClick={clearAllHistory}
-                className="font-mono text-[9px] text-slate-400 hover:text-red-500 font-semibold uppercase flex items-center gap-1 transition-colors cursor-pointer"
+                className="font-mono text-[9px] text-slate-500 hover:text-red-400 font-semibold uppercase flex items-center gap-1 transition-colors cursor-pointer"
               >
                 Clear Registry ({resolvedHistory.length})
               </button>
@@ -582,8 +591,8 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
           </div>
 
           {resolvedHistory.length === 0 ? (
-            <div className="bg-slate-50/50 border border-slate-200 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center">
-              <span className="font-mono text-[10px] text-slate-400">Archive empty: No resolved crisis logs registered.</span>
+            <div className="bg-slate-950/45 border border-slate-850 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center">
+              <span className="font-mono text-[10px] text-slate-500">Archive empty: No resolved crisis logs registered.</span>
             </div>
           ) : (
             <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
@@ -595,44 +604,44 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="border border-slate-200 rounded-xl p-3 bg-slate-50/25 hover:bg-slate-50/75 transition-all relative overflow-hidden"
+                    className="border border-slate-850 rounded-xl p-3 bg-slate-950/50 hover:bg-slate-900/50 transition-all relative overflow-hidden"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3">
-                        <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 flex-shrink-0">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-950 border border-emerald-900 flex items-center justify-center text-emerald-400 flex-shrink-0">
                           <ShieldCheck className="w-4 h-4" />
                         </div>
                         <div className="space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-heading text-xs font-bold text-slate-750">
+                            <span className="font-heading text-xs font-bold text-slate-200">
                               {hAlert.title}
                             </span>
                             <span className={`font-mono text-[7px] px-1.5 rounded uppercase border ${getSeverityBadge(hAlert.severity)}`}>
                               {hAlert.severity}
                             </span>
-                            <span className="font-mono text-[8.5px] text-slate-400 font-bold uppercase">
+                            <span className="font-mono text-[8.5px] text-slate-500 font-bold uppercase">
                               [{hAlert.sector}]
                             </span>
                           </div>
-                          <p className="text-[10.5px] leading-relaxed font-sans text-slate-550">
+                          <p className="text-[10.5px] leading-relaxed font-sans text-slate-400">
                             {hAlert.description}
                           </p>
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1.5 text-[9px] font-mono text-slate-400">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1.5 text-[9px] font-mono text-slate-500">
                             <span className="flex items-center gap-0.5">
-                              <Clock className="w-2.5 h-2.5 text-slate-350" />
-                              Detected: <span className="font-semibold text-slate-500">{hAlert.detectionTime}</span>
+                              <Clock className="w-2.5 h-2.5 text-slate-600" />
+                              Detected: <span className="font-semibold text-slate-400">{hAlert.detectionTime}</span>
                             </span>
-                            <span className="text-slate-300">|</span>
+                            <span className="text-slate-850">|</span>
                             <span className="flex items-center gap-0.5">
                               <ShieldCheck className="w-2.5 h-2.5 text-emerald-500/80" />
-                              Mitigated: <span className="font-semibold text-emerald-600">{hAlert.resolvedTime}</span>
+                              Mitigated: <span className="font-semibold text-emerald-400">{hAlert.resolvedTime}</span>
                             </span>
                             {hAlert.sector && onLocateOnMap && (
                               <>
-                                <span className="text-slate-300">|</span>
+                                <span className="text-slate-850">|</span>
                                 <button
                                   onClick={() => onLocateOnMap(hAlert.sector)}
-                                  className="text-[9px] font-bold text-slate-455 hover:text-blue-650 uppercase flex items-center gap-0.5 transition-colors cursor-pointer"
+                                  className="text-[9px] font-bold text-slate-400 hover:text-blue-400 uppercase flex items-center gap-0.5 transition-colors cursor-pointer"
                                 >
                                   <MapPin className="w-2.5 h-2.5" />
                                   <span>Locate Sector</span>
@@ -645,12 +654,12 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
 
                       {/* Right actions */}
                       <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                        <span className="text-[8.5px] font-mono text-emerald-650 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded font-bold uppercase">
+                        <span className="text-[8.5px] font-mono text-emerald-400 bg-emerald-950 border border-emerald-900/60 px-1.5 py-0.5 rounded font-bold uppercase">
                           OUTCOME: SUCCESS
                         </span>
                         <button
                           onClick={() => deleteHistoryItem(hAlert.id)}
-                          className="text-[8.5px] font-mono text-slate-350 hover:text-red-500 font-medium uppercase transition-colors py-0.5 cursor-pointer"
+                          className="text-[8.5px] font-mono text-slate-500 hover:text-red-400 font-medium uppercase transition-colors py-0.5 cursor-pointer"
                         >
                           Delete log
                         </button>

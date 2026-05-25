@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Info, Radio, Network, Flame, ShieldAlert, Check, Smartphone, Compass, Activity, Wifi, Navigation, Eye, RefreshCw, ZoomIn, ZoomOut, Mic, Battery, BatteryCharging, Signal } from "lucide-react";
+import { Info, Radio, Network, Flame, ShieldAlert, Check, Smartphone, Compass, Activity, Wifi, Navigation, Eye, RefreshCw, ZoomIn, ZoomOut, Mic, Battery, BatteryCharging, Signal, Brain, Cpu, Play, Pause, Sparkles, Terminal } from "lucide-react";
 import { motion } from "motion/react";
 
 interface SensorFeed {
@@ -79,6 +79,100 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
   const [simulateBattery, setSimulateBattery] = useState(84); // simulated battery level
   const [simulateBatteryCharging, setSimulateBatteryCharging] = useState(true); // simulated battery charging state
   const [simulateLatency, setSimulateLatency] = useState(25); // simulated network latency
+
+  // Aptara AI Situational Awareness Learning States
+  const [isAiLearning, setIsAiLearning] = useState(false);
+  const [learningEpochs, setLearningEpochs] = useState(0);
+  const [learningLoss, setLearningLoss] = useState(1.05);
+  const [learningLogs, setLearningLogs] = useState<string[]>([
+    "APTARA-NEURAL: Neural client synchronized with mobile SOD architecture.",
+    "APTARA-NEURAL: Weights initialized at standard uniform configuration."
+  ]);
+  const [aiClassification, setAiClassification] = useState("NOMINAL BASELINE");
+  const [attenuationWeights, setAttenuationWeights] = useState({
+    VIB: 0.25,
+    TILT: 0.25,
+    DB: 0.25,
+    RTT: 0.25
+  });
+
+  // Dual-threaded reinforcement and self-supervised training heartbeat
+  useEffect(() => {
+    if (!isAiLearning || !mobileConnected) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      // Access core mechatronic data refs to bypass rendering triggers
+      const forceVal = gyroDataRef.current 
+        ? Math.sqrt(motionDataRef.current.x * motionDataRef.current.x + motionDataRef.current.y * motionDataRef.current.y + motionDataRef.current.z * motionDataRef.current.z) 
+        : simulateVibration;
+      const pitchVal = gyroDataRef.current ? gyroDataRef.current.beta : simulatePitch;
+      const rollVal = gyroDataRef.current ? gyroDataRef.current.gamma : simulateRoll;
+      const tiltVal = Math.abs(pitchVal) + Math.abs(rollVal);
+      const dbVal = decibelDbRef.current || simulateDb;
+      const rttVal = networkRttRef.current || simulateLatency;
+
+      // Classify the situational frame
+      let classification = "STABLE MAIN DECK NOMINAL";
+      let logTrigger = "Normal mechatronics. Drift stable.";
+
+      if (forceVal > 14) {
+        classification = "SEISMIC WAVE TREMOR SHOCK";
+        logTrigger = `High impact registered: ${forceVal.toFixed(2)} m/s²`;
+      } else if (dbVal > 82) {
+        classification = "ACOUSTIC ENERGY EXCESS INTRUSION";
+        logTrigger = `Sound pressure crossed threshold: ${dbVal} dB`;
+      } else if (tiltVal > 45) {
+        classification = "CRITICAL ROTATIONAL INCLINE SHIFT";
+        logTrigger = `Critical attitude deviation: ${tiltVal.toFixed(1)}° alpha-beta`;
+      } else if (rttVal > 100) {
+        classification = "COHERENCE INTEGRITY DEGRADED";
+        logTrigger = `Signal ping delay high: ${rttVal} ms RTT`;
+      }
+
+      setAiClassification(classification);
+
+      // Compute dynamic attention weights using current telemetry priorities
+      const wVib = Math.max(0.1, forceVal / 22);
+      const wTilt = Math.max(0.1, tiltVal / 120);
+      const wDb = Math.max(0.1, (dbVal - 30) / 75);
+      const wRtt = Math.max(0.1, rttVal / 120);
+      const totalW = wVib + wTilt + wDb + wRtt;
+
+      const nVib = Number((wVib / totalW).toFixed(2));
+      const nTilt = Number((wTilt / totalW).toFixed(2));
+      const nDb = Number((wDb / totalW).toFixed(2));
+      const nRtt = Number((wRtt / totalW).toFixed(2));
+
+      setAttenuationWeights({
+        VIB: nVib,
+        TILT: nTilt,
+        DB: nDb,
+        RTT: nRtt
+      });
+
+      // Update loss convergence and feed step
+      setLearningLoss((prev) => {
+        const nextLoss = prev * 0.94 + (Math.random() * 0.015);
+        const finalLoss = Math.max(0.011, Number(nextLoss.toFixed(4)));
+
+        setLearningEpochs((prevEpoch) => {
+          const nextEpoch = prevEpoch + 1;
+          setLearningLogs((pLogs) => {
+            const nextLog = `[STEP #${nextEpoch}] Feed injected. Classification: ${classification}. Loss: ${finalLoss.toFixed(4)}. Focus dynamic bias: VIB=${Math.round(nVib*100)}% | TILT=${Math.round(nTilt*100)}% | DB=${Math.round(nDb*100)}% | RTT=${Math.round(nRtt*100)}%`;
+            return [nextLog, ...pLogs.slice(0, 7)];
+          });
+          return nextEpoch;
+        });
+
+        return finalLoss;
+      });
+
+    }, 1200);
+
+    return () => clearInterval(interval);
+  }, [isAiLearning, mobileConnected, simulateVibration, simulatePitch, simulateRoll, simulateDb, simulateLatency]);
 
   // High-performance mechatronic telemetry refs to avoid cascading rendering depth loops
   const gyroDataRef = React.useRef<{ alpha: number; beta: number; gamma: number } | null>(null);
@@ -522,28 +616,28 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-full">
       {/* 1. Radar Visual Deck (Main Map Panel) */}
-      <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between relative overflow-hidden h-[380px] lg:h-auto shadow-sm">
+      <div className="lg:col-span-8 bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col justify-between relative overflow-hidden h-[380px] lg:h-auto shadow-2xl cyber-glow-blue">
         {/* Absolute Background Scan Radar Lines */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.04] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/50 via-slate-100 to-white" />
-        <div className="absolute inset-0 pointer-events-none opacity-[0.4] bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:24px_24px]" />
+        <div className="absolute inset-0 pointer-events-none opacity-[0.25] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-950/80 via-slate-950 to-black" />
+        <div className="absolute inset-0 pointer-events-none opacity-[0.2] bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] cyber-grid" />
         
         {/* Interactive Layer Badge overlay */}
-        <div className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur border border-slate-200 border-l-2 border-l-blue-600 px-3 py-1.5 rounded flex items-center gap-2 shadow-sm">
-          <Radio className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
-          <span className="font-mono text-[10px] tracking-widest text-slate-700 uppercase">MESH: {activeLayer}</span>
+        <div className="absolute top-4 left-4 z-10 bg-slate-900/90 backdrop-blur border border-slate-800 border-l-2 border-l-blue-500 px-3 py-1.5 rounded flex items-center gap-2 shadow-md">
+          <Radio className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
+          <span className="font-mono text-[10px] tracking-widest text-slate-300 uppercase">MESH: {activeLayer}</span>
         </div>
 
         {/* Floating Hazard Target Badge overlay */}
         {highlightedSector && (
-          <div className="absolute top-4 right-4 z-10 bg-red-50/95 backdrop-blur border border-red-200 border-l-2 border-l-red-500 px-3.5 py-1.5 rounded flex items-center gap-3 shadow-md animate-pulse">
+          <div className="absolute top-4 right-4 z-10 bg-red-950/90 backdrop-blur border border-red-900 border-l-2 border-l-red-500 px-3.5 py-1.5 rounded flex items-center gap-3 shadow-md animate-pulse">
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-              <span className="font-mono text-[9px] font-bold text-red-800 uppercase tracking-wide">Target: {highlightedSector}</span>
+              <span className="font-mono text-[9px] font-bold text-red-200 uppercase tracking-wide">Target: {highlightedSector}</span>
             </div>
             {onClearHighlight && (
               <button 
                 onClick={onClearHighlight}
-                className="text-[9px] font-mono font-bold text-slate-400 hover:text-red-600 transition-colors uppercase border border-slate-200 hover:border-red-200 px-1.5 py-0.5 bg-white rounded cursor-pointer"
+                className="text-[9px] font-mono font-bold text-red-400 hover:text-white transition-colors uppercase border border-red-900/60 hover:border-red-500 px-1.5 py-0.5 bg-red-950/40 rounded cursor-pointer"
               >
                 Clear Ping
               </button>
@@ -564,29 +658,29 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
             viewBox={viewBoxStr} 
             animate={{ viewBox: viewBoxStr }}
             transition={{ type: "spring", stiffness: 85, damping: 16 }}
-            className="w-full h-full max-h-[280px] text-slate-300 opacity-80"
+            className="w-full h-full max-h-[280px] text-slate-800"
           >
             {/* Outline grids */}
-            <circle cx="500" cy="250" r="120" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 4" fill="none" className="text-slate-200" />
-            <circle cx="500" cy="250" r="220" stroke="currentColor" strokeWidth="0.5" strokeDasharray="6 6" fill="none" className="text-slate-200" />
-            <line x1="500" y1="20" x2="500" y2="480" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 4" className="text-slate-200" />
-            <line x1="20" y1="250" x2="980" y2="250" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 4" className="text-slate-200" />
+            <circle cx="500" cy="250" r="120" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 4" fill="none" className="text-slate-800" />
+            <circle cx="500" cy="250" r="220" stroke="currentColor" strokeWidth="0.5" strokeDasharray="6 6" fill="none" className="text-slate-800" />
+            <line x1="500" y1="20" x2="500" y2="480" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 4" className="text-slate-800" />
+            <line x1="20" y1="250" x2="980" y2="250" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 4" className="text-slate-800" />
 
             {/* Stylized world continents dots layout */}
             {/* North America */}
-            <path d="M 120 120 Q 200 130 250 160 T 320 220 Q 220 270 210 320" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-slate-200/80" />
-            <circle cx="210" cy="150" r="2" fill="currentColor" className="text-slate-300" />
-            <circle cx="240" cy="180" r="2" fill="currentColor" className="text-slate-300" />
+            <path d="M 120 120 Q 200 130 250 160 T 320 220 Q 220 270 210 320" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-slate-700/50" />
+            <circle cx="210" cy="150" r="2" fill="currentColor" className="text-slate-700" />
+            <circle cx="240" cy="180" r="2" fill="currentColor" className="text-slate-700" />
             
             {/* South America */}
-            <path d="M 280 280 Q 300 350 330 400 T 310 480" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-200/60" />
+            <path d="M 280 280 Q 300 350 330 400 T 310 480" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-700/40" />
 
             {/* Eurasia / Africa */}
-            <path d="M 450 100 Q 550 50 700 80 T 850 110" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-slate-200/60" />
-            <path d="M 480 200 Q 540 280 600 320 T 560 420" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-200/60" />
+            <path d="M 450 100 Q 550 50 700 80 T 850 110" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-slate-700/40" />
+            <path d="M 480 200 Q 540 280 600 320 T 560 420" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-700/40" />
 
             {/* Australia */}
-            <path d="M 780 340 Q 840 330 860 380 T 820 420" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-200/60" />
+            <path d="M 780 340 Q 840 330 860 380 T 820 420" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-700/40" />
 
             {/* Active Telemetry Layer Visual Overlays (Thermal, Seismic, Wind, Ozone) */}
             {activeLayer === "thermal" && (
@@ -734,17 +828,17 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
           </motion.svg>
 
           {/* Zoom Level Control Slider Overlay */}
-          <div className="absolute bottom-2 right-2 z-10 bg-white/95 backdrop-blur border border-slate-200/80 px-2.5 py-1.5 rounded-lg flex items-center gap-2.5 shadow-sm hover:border-slate-300 transition-all select-none">
+          <div className="absolute bottom-2 right-2 z-10 bg-slate-900/90 backdrop-blur border border-slate-800 px-2.5 py-1.5 rounded-lg flex items-center gap-2.5 shadow-lg select-none">
             <button 
               type="button"
               onClick={() => setZoom(prev => Math.max(1.0, Number((prev - 0.2).toFixed(1))))}
-              className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+              className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
               title="Zoom Out"
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
             <div className="flex flex-col">
-              <span className="text-[7.5px] font-mono text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">Scale Zoom</span>
+              <span className="text-[7.5px] font-mono text-slate-500 font-bold uppercase tracking-widest leading-none mb-1">Scale Zoom</span>
               <input 
                 type="range" 
                 min="1.0" 
@@ -752,50 +846,50 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
                 step="0.1" 
                 value={zoom}
                 onChange={(e) => setZoom(Number(e.target.value))}
-                className="w-20 md:w-24 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                className="w-20 md:w-24 h-1 bg-slate-850 rounded-lg appearance-none cursor-pointer accent-blue-500 text-blue-500"
               />
             </div>
             <button 
               type="button"
               onClick={() => setZoom(prev => Math.min(3.0, Number((prev + 0.2).toFixed(1))))}
-              className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+              className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
               title="Zoom In"
             >
               <ZoomIn className="w-3.5 h-3.5" />
             </button>
-            <span className="font-mono text-[9px] font-bold text-slate-600 min-w-[28px] text-right">
+            <span className="font-mono text-[9px] font-bold text-slate-300 min-w-[28px] text-right">
               {zoom === 1.0 ? "GLOBAL" : `${zoom.toFixed(1)}x`}
             </span>
           </div>
         </div>
 
         {/* Selected Sensor Telemetry Shelf */}
-        <div className="bg-slate-50 border border-slate-205/60 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-h-[56px]">
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-h-[56px] shadow-inner">
           {selectedSensor ? (
             (() => {
               const s = sensors.find((x) => x.id === selectedSensor)!;
               return (
                 <>
                   <div className="flex items-center gap-2.5">
-                    <div className="w-2.5 h-2.5 bg-blue-600 rounded-full animate-pulse shadow-[0_0_5px_rgba(37,99,235,0.6)]" />
+                    <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.85)]" />
                     <div>
-                      <span className="font-heading text-xs font-semibold text-slate-800 block">{s.name}</span>
-                      <span className="font-mono text-[9px] text-slate-500">COORDS: {s.location} | DEV_TYPE: {s.type}</span>
+                      <span className="font-heading text-xs font-semibold text-slate-200 block">{s.name}</span>
+                      <span className="font-mono text-[9px] text-slate-400">COORDS: {s.location} | DEV_TYPE: {s.type}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-5">
                     <div className="text-right">
-                      <span className="text-[9px] font-mono block text-slate-400 uppercase">PING</span>
-                      <span className="font-mono text-[11px] text-blue-600 font-semibold">{s.ping}ms</span>
+                      <span className="text-[9px] font-mono block text-slate-500 uppercase">PING</span>
+                      <span className="font-mono text-[11px] text-blue-400 font-semibold">{s.ping}ms</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-[9px] font-mono block text-slate-400 uppercase">VALUE</span>
-                      <span className="font-mono text-xs text-slate-800 font-semibold">{s.value}</span>
+                      <span className="text-[9px] font-mono block text-slate-500 uppercase">VALUE</span>
+                      <span className="font-mono text-xs text-slate-200 font-bold">{s.value}</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-[9px] font-mono block text-slate-400 uppercase">MODE</span>
+                      <span className="text-[9px] font-mono block text-slate-500 uppercase">MODE</span>
                       <span className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded font-bold ${
-                        s.status === "warning" ? "bg-amber-50 text-amber-700 border border-amber-200" : s.status === "calibrating" ? "bg-blue-50 text-blue-700 border border-blue-200" : "bg-emerald-50 text-emerald-700 border border-emerald-250"
+                        s.status === "warning" ? "bg-amber-950/65 text-amber-400 border border-amber-900" : s.status === "calibrating" ? "bg-blue-950/65 text-blue-400 border border-blue-900" : "bg-emerald-950/65 text-emerald-400 border border-emerald-900"
                       }`}>{s.status}</span>
                     </div>
                   </div>
@@ -803,8 +897,8 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
               );
             })()
           ) : (
-            <div className="flex items-center gap-2 text-slate-400 text-xs font-mono italic">
-              <Info className="w-4 h-4 flex-shrink-0" />
+            <div className="flex items-center gap-2 text-slate-500 text-xs font-mono italic">
+              <Info className="w-4 h-4 flex-shrink-0 text-slate-600" />
               <span>Select any telemetry hub node on the coordinate map scan vectors above...</span>
             </div>
           )}
@@ -814,9 +908,9 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
       {/* 2. Control & Table Panel */}
       <div className="lg:col-span-4 flex flex-col gap-4">
         {/* Layer Selections */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 shadow-sm">
-          <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-2">
-            <Network className="w-3.5 h-3.5 text-blue-600" />
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-3 shadow-xl">
+          <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+            <Network className="w-3.5 h-3.5 text-blue-400" />
             Planetary Feed Layers
           </h3>
           <p className="text-[11px] text-slate-400 leading-relaxed font-sans mb-1">
@@ -828,60 +922,60 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
               onClick={() => handleLayerChange("thermal")}
               className={`w-full text-left px-3 py-2.5 rounded-lg border text-xs font-mono transition-all flex items-center justify-between cursor-pointer ${
                 activeLayer === "thermal" 
-                  ? "bg-red-50 border-red-200 text-red-700 font-semibold"
-                  : "bg-slate-50 border-slate-200/60 text-slate-600 hover:bg-slate-100/60 hover:text-slate-800"
+                  ? "bg-red-950/40 border-red-800 text-red-400 font-semibold shadow-[0_0_8px_rgba(239,68,68,0.2)]"
+                  : "bg-slate-950/60 border-slate-850 text-slate-400 hover:bg-slate-900/60 hover:text-slate-100"
               }`}
             >
               <span className="flex items-center gap-2">
-                <Flame className="w-3.5 h-3.5" />
+                <Flame className="w-3.5 h-3.5 text-red-500" />
                 Thermal Composite
               </span>
-              {activeLayer === "thermal" && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+              {activeLayer === "thermal" && <Check className="w-3.5 h-3.5 stroke-[3] text-red-400" />}
             </button>
 
             <button
               onClick={() => handleLayerChange("seismic")}
               className={`w-full text-left px-3 py-2.5 rounded-lg border text-xs font-mono transition-all flex items-center justify-between cursor-pointer ${
                 activeLayer === "seismic" 
-                  ? "bg-amber-50 border-amber-200 text-amber-800 font-semibold"
-                  : "bg-slate-50 border-slate-200/60 text-slate-600 hover:bg-slate-100/60 hover:text-slate-800"
+                  ? "bg-amber-950/40 border-amber-800 text-amber-400 font-semibold shadow-[0_0_8px_rgba(245,158,11,0.2)]"
+                  : "bg-slate-950/60 border-slate-850 text-slate-400 hover:bg-slate-900/60 hover:text-slate-100"
               }`}
             >
               <span className="flex items-center gap-2">
-                <ShieldAlert className="w-3.5 h-3.5 animate-pulse text-amber-600" />
+                <ShieldAlert className="w-3.5 h-3.5 animate-pulse text-amber-500" />
                 Tectonic / Seismic Fault
               </span>
-              {activeLayer === "seismic" && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+              {activeLayer === "seismic" && <Check className="w-3.5 h-3.5 stroke-[3] text-amber-400" />}
             </button>
 
             <button
               onClick={() => handleLayerChange("wind")}
               className={`w-full text-left px-3 py-2.5 rounded-lg border text-xs font-mono transition-all flex items-center justify-between cursor-pointer ${
                 activeLayer === "wind" 
-                  ? "bg-blue-50 border-blue-200 text-blue-700 font-semibold"
-                  : "bg-slate-50 border-slate-200/60 text-slate-600 hover:bg-slate-100/60 hover:text-slate-800"
+                  ? "bg-blue-950/40 border-blue-800 text-blue-400 font-semibold shadow-[0_0_8px_rgba(59,130,246,0.2)]"
+                  : "bg-slate-950/60 border-slate-850 text-slate-400 hover:bg-slate-900/60 hover:text-slate-100"
               }`}
             >
               <span className="flex items-center gap-2">
-                <Radio className="w-3.5 h-3.5" />
+                <Radio className="w-3.5 h-3.5 text-blue-400" />
                 Stratospheric Currents
               </span>
-              {activeLayer === "wind" && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+              {activeLayer === "wind" && <Check className="w-3.5 h-3.5 stroke-[3] text-blue-400" />}
             </button>
 
             <button
               onClick={() => handleLayerChange("ozone")}
               className={`w-full text-left px-3 py-2.5 rounded-lg border text-xs font-mono transition-all flex items-center justify-between cursor-pointer ${
                 activeLayer === "ozone" 
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-700 font-semibold" 
-                  : "bg-slate-50 border-slate-200/60 text-slate-600 hover:bg-slate-100/60 hover:text-slate-800"
+                  ? "bg-emerald-950/40 border-emerald-800 text-emerald-400 font-semibold shadow-[0_0_8px_rgba(16,185,129,0.2)]" 
+                  : "bg-slate-950/60 border-slate-850 text-slate-400 hover:bg-slate-900/60 hover:text-slate-100"
               }`}
             >
               <span className="flex items-center gap-2">
-                <Info className="w-3.5 h-3.5" />
+                <Info className="w-3.5 h-3.5 text-emerald-500" />
                 Ozone / SRM Particle
               </span>
-              {activeLayer === "ozone" && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+              {activeLayer === "ozone" && <Check className="w-3.5 h-3.5 stroke-[3] text-emerald-400" />}
             </button>
           </div>
         </div>
@@ -1093,6 +1187,189 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
                 </div>
               </div>
 
+              {/* Aptara AI Situational Awareness Learning Console */}
+              <div className="bg-slate-900 border border-slate-800/80 rounded-xl p-3.5 space-y-3.5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-full blur-2xl pointer-events-none" />
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-[9.5px] font-mono text-teal-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                    <Brain className={`w-3.5 h-3.5 ${isAiLearning ? "animate-pulse text-teal-400" : "text-slate-400"}`} />
+                    Aptara Situational Learning v2
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${isAiLearning ? "bg-teal-500 animate-ping" : "bg-slate-500"}`} />
+                    <span className="text-[7.5px] font-mono text-slate-400 uppercase font-bold">
+                      {isAiLearning ? "ONLINE TRAINING" : "STANDBY"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Training Stats Block */}
+                <div className="grid grid-cols-3 gap-2 text-[9px] font-mono">
+                  <div className="bg-slate-950/60 border border-slate-800 p-2 rounded-md">
+                    <span className="text-[7px] text-slate-500 uppercase tracking-widest block font-bold">BATCH STEPS</span>
+                    <span className="text-white font-bold block mt-1 text-[11px]">{learningEpochs}</span>
+                  </div>
+                  
+                  <div className="bg-slate-950/60 border border-slate-800 p-2 rounded-md">
+                    <span className="text-[7px] text-slate-500 uppercase tracking-widest block font-bold">LOSS GD</span>
+                    <span className="text-teal-300 font-bold block mt-1 text-[11px]">
+                      {isAiLearning ? learningLoss.toFixed(4) : "1.0500"}
+                    </span>
+                  </div>
+
+                  <div className="bg-slate-950/60 border border-slate-800 p-2 rounded-md">
+                    <span className="text-[7px] text-slate-500 uppercase tracking-widest block font-bold">AI STATUS</span>
+                    <span className={`font-bold block mt-1 text-[8.5px] tracking-tight leading-normal truncate ${
+                      !isAiLearning 
+                        ? "text-slate-400" 
+                        : aiClassification.includes("NOMINAL") 
+                        ? "text-emerald-400" 
+                        : aiClassification.includes("SHOCK") || aiClassification.includes("CRITICAL")
+                        ? "text-rose-400 animate-pulse" 
+                        : "text-amber-400 animate-pulse"
+                    }`}>
+                      {isAiLearning ? aiClassification.replace("STABLE ", "").replace("STABILIZED", "") : "CALIBRATED"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Features Attention Weight Matrix */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-[8px] font-mono text-slate-400">
+                    <span className="uppercase tracking-widest font-bold">DYNAMIC FOCUS MATRIX (FEATURE BIAS)</span>
+                    <span className="text-teal-400 font-bold">Σ Weights = 1.00</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[8.5px] font-mono">
+                    {/* Weight 1: Seismic Vibration */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-slate-400">
+                        <span>VIB (Shock Impact)</span>
+                        <span className="text-white font-bold">{Math.round(attenuationWeights.VIB * 100)}%</span>
+                      </div>
+                      <div className="w-full bg-slate-950 h-1 rounded overflow-hidden">
+                        <motion.div 
+                          className="h-full bg-teal-500" 
+                          animate={{ width: `${attenuationWeights.VIB * 100}%` }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Weight 2: Attitudinal Incline Slope */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-slate-400">
+                        <span>TILT (Inclination)</span>
+                        <span className="text-white font-bold">{Math.round(attenuationWeights.TILT * 100)}%</span>
+                      </div>
+                      <div className="w-full bg-slate-950 h-1 rounded overflow-hidden">
+                        <motion.div 
+                          className="h-full bg-blue-500" 
+                          animate={{ width: `${attenuationWeights.TILT * 100}%` }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Weight 3: Acoustic Noise decibels */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-slate-400">
+                        <span>DB (Sound Pressure)</span>
+                        <span className="text-white font-bold">{Math.round(attenuationWeights.DB * 100)}%</span>
+                      </div>
+                      <div className="w-full bg-slate-950 h-1 rounded overflow-hidden">
+                        <motion.div 
+                          className="h-full bg-rose-500" 
+                          animate={{ width: `${attenuationWeights.DB * 100}%` }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Weight 4: Coherence delay latency */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-slate-400">
+                        <span>RTT (Signal Coherence)</span>
+                        <span className="text-white font-bold">{Math.round(attenuationWeights.RTT * 100)}%</span>
+                      </div>
+                      <div className="w-full bg-slate-950 h-1 rounded overflow-hidden">
+                        <motion.div 
+                          className="h-full bg-indigo-500" 
+                          animate={{ width: `${attenuationWeights.RTT * 100}%` }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mini terminal style logging output */}
+                <div className="space-y-1">
+                  <span className="text-[7px] font-mono text-slate-500 uppercase tracking-widest font-bold flex items-center gap-1">
+                    <Terminal className="w-2.5 h-2.5" />
+                    Neural Execution Terminal Logs
+                  </span>
+                  <div className="bg-slate-950/80 border border-slate-900 rounded p-2 font-mono text-[7.5px] leading-relaxed text-slate-300 h-[64px] overflow-y-auto space-y-1 flex flex-col justify-end select-text">
+                    {[...learningLogs].reverse().map((log, lIdx) => (
+                      <div key={lIdx} className="truncate">
+                        <span className="text-teal-500">❯</span> {log}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Control Action Buttons */}
+                <div className="pt-0.5 flex gap-2">
+                  <button
+                    onClick={() => {
+                      setIsAiLearning(!isAiLearning);
+                      onNotifyLog(
+                        isAiLearning
+                          ? "Paused Aptara AI situational training model loop."
+                          : "Initiated Aptara AI self-supervised reinforcement training loop on live mobile SOD telemetry stream!",
+                        isAiLearning ? "info" : "success"
+                      );
+                    }}
+                    className={`flex-1 py-2 px-3 rounded-lg text-[9.5px] font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+                      isAiLearning
+                        ? "bg-amber-950/40 text-amber-400 border border-amber-900/40 hover:bg-amber-900 hover:text-white"
+                        : "bg-teal-900/80 text-teal-300 border border-teal-850 hover:bg-teal-600 hover:text-white hover:border-teal-500"
+                    }`}
+                  >
+                    {isAiLearning ? (
+                      <>
+                        <Pause className="w-3.5 h-3.5 text-amber-400" />
+                        Pause Calibration Loop
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-3.5 h-3.5 text-teal-400" />
+                        Learn Situational Patterns
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setLearningEpochs(0);
+                      setLearningLoss(1.05);
+                      setLearningLogs([
+                        "APTARA-NEURAL: Weights reset to standard uniform template.",
+                        "APTARA-NEURAL: Backprop vectors flushed. Awaiting mechatronic frames."
+                      ]);
+                      setAiClassification("NOMINAL BASELINE");
+                      setAttenuationWeights({ VIB: 0.25, TILT: 0.25, DB: 0.25, RTT: 0.25 });
+                      onNotifyLog("Flushed Aptara AI mechatronic learning checkpoints. Neural weights refreshed.", "info");
+                    }}
+                    className="py-2 px-2.5 rounded-lg text-[9px] font-mono font-bold uppercase hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 cursor-pointer transition-all"
+                    title="Reset Learner"
+                  >
+                    Reset Grid
+                  </button>
+                </div>
+              </div>
+
               {/* UNIVERSAL DESKTOP AND SANDBOX TESTING MODULE */}
               <div className="bg-slate-900/70 border border-indigo-950/80 p-3 rounded-xl space-y-3">
                 <div className="flex items-center justify-between">
@@ -1225,8 +1502,8 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
         </div>
 
         {/* Local Telemetry Station Grid */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-2 flex-grow overflow-y-auto max-h-[300px] lg:max-h-none shadow-sm">
-          <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-2 flex-grow overflow-y-auto max-h-[300px] lg:max-h-none shadow-xl">
+          <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 mb-1">
             Sensor Grid Status
           </h3>
           <div className="space-y-1.5 flex-1">
@@ -1236,16 +1513,16 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
                 onClick={() => handleSelectSensor(s)}
                 className={`p-2 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
                   selectedSensor === s.id 
-                    ? "bg-blue-50/50 border-blue-300" 
-                    : "bg-slate-50 border-slate-200/60 hover:bg-slate-100/50"
+                    ? "bg-blue-950/40 border-blue-500/50 text-blue-200 shadow-[0_0_8px_rgba(59,130,246,0.15)]" 
+                    : "bg-slate-950/40 border-slate-850 hover:bg-slate-900/60 text-slate-300"
                 }`}
               >
                 <div>
-                  <span className={`font-heading text-xs font-medium block ${selectedSensor === s.id ? "text-blue-700" : "text-slate-700"}`}>{s.name}</span>
-                  <span className="font-mono text-[9px] text-slate-400">{s.location}</span>
+                  <span className={`font-heading text-xs font-medium block ${selectedSensor === s.id ? "text-blue-400 font-bold" : "text-slate-200"}`}>{s.name}</span>
+                  <span className="font-mono text-[9px] text-slate-500">{s.location}</span>
                 </div>
                 <div className="text-right">
-                  <span className="font-mono text-[10px] text-slate-600 font-medium block">{s.value}</span>
+                  <span className="font-mono text-[10px] text-slate-400 font-medium block">{s.value}</span>
                   <span className={`inline-block w-1.5 h-1.5 rounded-full ${
                     s.status === "warning" ? "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.5)]" : s.status === "calibrating" ? "bg-blue-500 shadow-[0_0_4px_rgba(37,99,235,0.5)]" : "bg-emerald-400"
                   }`} />

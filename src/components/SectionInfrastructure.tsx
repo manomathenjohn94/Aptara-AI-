@@ -127,82 +127,82 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
       {/* 1. Global Infrastructure Asset Stats */}
       <div className="xl:col-span-4 flex flex-col gap-4">
         {/* Core Cells Status Board */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-          <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-705 flex items-center gap-2 mb-3">
-            <Cpu className="w-4 h-4 text-blue-600" />
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
+          <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2 mb-3">
+            <Cpu className="w-4 h-4 text-blue-400" />
             Macro Infrastructure Status
           </h3>
-          <p className="text-[11px] text-slate-500 leading-relaxed font-sans mb-4">
+          <p className="text-[11px] text-slate-450 leading-relaxed font-sans mb-4">
             Oversight of continental scrubbers, aerosol release terminals, and oceanic sonar grid nodes.
           </p>
 
           <div className="space-y-3 font-mono text-xs">
-            <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded border border-slate-200">
-              <span className="text-slate-400">CO2 SCRUB CELL TOTAL</span>
-              <span className="font-bold text-slate-800">{scrubberGrid.totalCellss}</span>
+            <div className="flex justify-between items-center bg-slate-950/60 p-2.5 rounded border border-slate-800">
+              <span className="text-slate-500">CO2 SCRUB CELL TOTAL</span>
+              <span className="font-bold text-slate-100">{scrubberGrid.totalCellss}</span>
             </div>
             
             <div className="grid grid-cols-2 gap-2">
-              <div className="bg-emerald-50/50 p-2 border border-emerald-200/50 rounded flex flex-col">
-                <span className="text-[10px] text-emerald-600 font-bold">ONLINE</span>
-                <span className="font-semibold text-emerald-800">{scrubberGrid.online} cells</span>
+              <div className="bg-emerald-950/40 p-2 border border-emerald-900/50 rounded flex flex-col">
+                <span className="text-[10px] text-emerald-400 font-bold">ONLINE</span>
+                <span className="font-semibold text-emerald-200">{scrubberGrid.online} cells</span>
               </div>
-              <div className="bg-amber-50/50 p-2 border border-amber-200/50 rounded flex flex-col">
-                <span className="text-[10px] text-amber-600 font-bold">MAINTENANCE</span>
-                <span className="font-semibold text-amber-800">{scrubberGrid.maintenance} cells</span>
+              <div className="bg-amber-950/40 p-2 border border-amber-900/50 rounded flex flex-col">
+                <span className="text-[10px] text-amber-500 font-bold">MAINTENANCE</span>
+                <span className="font-semibold text-amber-200">{scrubberGrid.maintenance} cells</span>
               </div>
             </div>
 
-            <div className="flex justify-between items-center py-1 text-[11px] border-b border-slate-100">
-              <span className="text-slate-400">GRID EFFICIENCY RATIO</span>
-              <span className="text-emerald-600 font-bold">{scrubberGrid.efficiency}%</span>
+            <div className="flex justify-between items-center py-1 text-[11px] border-b border-slate-850">
+              <span className="text-slate-500">GRID EFFICIENCY RATIO</span>
+              <span className="text-emerald-400 font-bold">{scrubberGrid.efficiency}%</span>
             </div>
 
             <div className="flex justify-between items-center py-1 text-[11px]">
-              <span className="text-slate-400">INDISPENSABLE POWER DRAW</span>
-              <span className="text-blue-600 font-bold">{scrubberGrid.powerDraw}</span>
+              <span className="text-slate-500">INDISPENSABLE POWER DRAW</span>
+              <span className="text-blue-400 font-bold">{scrubberGrid.powerDraw}</span>
             </div>
           </div>
         </div>
 
         {/* Tactical Air/SOD Deployment Tech Specs */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 flex-1 flex flex-col justify-between shadow-sm">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex-1 flex flex-col justify-between shadow-xl">
           <div>
-            <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-2 mb-2">
-              <Compass className="w-3.5 h-3.5 text-blue-600" />
+            <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2 mb-2">
+              <Compass className="w-3.5 h-3.5 text-blue-400" />
               SOD Spec Diagnostics
             </h3>
-            <p className="text-[11.5px] text-slate-505 font-sans leading-relaxed mb-4">
+            <p className="text-[11.5px] text-slate-450 font-sans leading-relaxed mb-4">
               Smart Observer Device (SOD) systems operate via solar-powered micro-uav swarm lattices to capture high-altitude environmental telemetry, monitor ozone concentrations, and guide thermal reflection fluxes.
             </p>
           </div>
 
-          <div className="space-y-1.5 font-mono text-[10px] border-t border-slate-100 pt-3">
-            <div className="flex justify-between text-slate-400">
+          <div className="space-y-1.5 font-mono text-[10px] border-t border-slate-800 pt-3">
+            <div className="flex justify-between text-slate-500">
               <span>DEPLOYMENT SYSTEM:</span>
-              <span className="text-slate-700 font-medium">AEROSOL ATOMIZER TYPE-7</span>
+              <span className="text-slate-300 font-medium font-bold">AEROSOL ATOMIZER TYPE-7</span>
             </div>
-            <div className="flex justify-between text-slate-400">
+            <div className="flex justify-between text-slate-500">
               <span>SOLAR ABSORBANCE SCALE:</span>
-              <span className="text-slate-700 font-medium">0.034 um particle albedo</span>
+              <span className="text-slate-300 font-medium">0.034 um particle albedo</span>
             </div>
-            <div className="flex justify-between text-slate-400">
+            <div className="flex justify-between text-slate-500">
               <span>O3 LIFETIME SPHERE:</span>
-              <span className="text-slate-700 font-medium">48-Hour synthetic decay cycle</span>
+              <span className="text-slate-300 font-medium">48-Hour synthetic decay cycle</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* 2. Stratosphere Sec Area & Swarm Deployments */}
-      <div className="xl:col-span-8 bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-sm">
+      <div className="xl:col-span-8 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-xl">
         <div>
-          <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center justify-between mb-4">
+          <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center justify-between mb-4">
             <span className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-blue-600" />
+              <Zap className="w-4 h-4 text-blue-400" />
               SOD Stratospheric Drone Command Suite
             </span>
-            <span className="font-mono text-[10px] text-slate-400 font-normal">Active Shields: 5/5 sectors</span>
+            <span className="font-mono text-[10px] text-slate-500 font-normal">Active Shields: 5/5 sectors</span>
           </h3>
 
           {/* Sector grid */}
@@ -210,7 +210,7 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
             {sectors.map((sec) => (
               <div 
                 key={sec.id} 
-                className="bg-slate-50 border border-slate-200 rounded-lg p-3 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden"
+                className="bg-slate-950/60 border border-slate-850 rounded-lg p-3 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden text-slate-300"
               >
                 {/* Visual stress alert glows */}
                 {sec.stress === "severe" && (
@@ -226,12 +226,12 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
                 {/* Left block Info */}
                 <div className="md:w-1/3">
                   <div className="flex items-center gap-2">
-                    <span className="font-heading text-xs text-slate-800 font-bold">{sec.name}</span>
-                    <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-white text-slate-500 border border-slate-200">{sec.code}</span>
+                    <span className="font-heading text-xs text-slate-200 font-bold">{sec.name}</span>
+                    <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">{sec.code}</span>
                   </div>
-                  <div className="mt-1 flex items-center gap-4 text-[10px] text-slate-550 font-mono">
-                    <span className="flex items-center gap-1">OZONE: <strong className={sec.ozoneUnit < 230 ? "text-red-650 font-bold" : sec.ozoneUnit < 280 ? "text-amber-600 font-semibold" : "text-emerald-600 font-semibold"}>{sec.ozoneUnit} DU</strong></span>
-                    <span>DRONES: <strong className="text-slate-705 font-medium">{sec.drones}%</strong></span>
+                  <div className="mt-1 flex items-center gap-4 text-[10px] text-slate-500 font-mono">
+                    <span className="flex items-center gap-1">OZONE: <strong className={sec.ozoneUnit < 230 ? "text-red-400 font-bold" : sec.ozoneUnit < 280 ? "text-amber-500 font-semibold" : "text-emerald-400 font-semibold"}>{sec.ozoneUnit} DU</strong></span>
+                    <span>DRONES: <strong className="text-slate-300 font-medium">{sec.drones}%</strong></span>
                   </div>
                 </div>
 
@@ -239,23 +239,23 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
                 <div className="flex-1">
                   {sec.activeLaunch ? (
                     <div className="space-y-1">
-                      <div className="flex justify-between font-mono text-[9px] text-blue-600 animate-pulse font-semibold uppercase">
+                      <div className="flex justify-between font-mono text-[9px] text-blue-400 animate-pulse font-semibold uppercase">
                         <span>Deploying SOD aerosol vector...</span>
                         <span>{sec.progress}%</span>
                       </div>
-                      <div className="w-full bg-slate-100 h-1.5 rounded overflow-hidden p-0.5 border border-slate-200">
+                      <div className="w-full bg-slate-900 h-1.5 rounded overflow-hidden p-0.5 border border-slate-800">
                         <motion.div 
-                          className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 rounded-sm"
+                          className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-sm"
                           style={{ width: `${sec.progress}%` }}
                         />
                       </div>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2.5">
-                      <div className="flex-1 bg-slate-100 h-1.5 rounded overflow-hidden border border-slate-200 p-0.5">
-                        <div className="h-full bg-slate-400 rounded-sm" style={{ width: `${sec.drones}%` }} />
+                      <div className="flex-1 bg-slate-900 h-1.5 rounded overflow-hidden p-0.5 border border-slate-800">
+                        <div className="h-full bg-slate-700 rounded-sm" style={{ width: `${sec.drones}%` }} />
                       </div>
-                      <span className="font-mono text-[10px] text-slate-400">GRID LOAD</span>
+                      <span className="font-mono text-[10px] text-slate-500">GRID LOAD</span>
                     </div>
                   )}
                 </div>
@@ -265,8 +265,8 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
                   <button
                     onClick={() => handleLaunchDrones(sec.id)}
                     disabled={sec.activeLaunch || sec.drones >= 100}
-                    className={`px-3 py-1.5 rounded font-mono text-[10px] font-bold uppercase flex items-center gap-1.5 transition-all text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-45 disabled:cursor-not-allowed cursor-pointer shadow-sm ${
-                      sec.drones >= 100 ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed hover:bg-grey-100" : ""
+                    className={`px-3 py-1.5 rounded font-mono text-[10px] font-bold uppercase flex items-center gap-1.5 transition-all text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-45 disabled:cursor-not-allowed cursor-pointer shadow-md ${
+                      sec.drones >= 100 ? "bg-slate-900 text-slate-500 border border-slate-850 cursor-not-allowed" : ""
                     }`}
                   >
                     <PlaneTakeoff className="w-3.5 h-3.5" />
@@ -279,16 +279,16 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
         </div>
 
         {/* Telemetry Console Printouts */}
-        <div className="mt-5 bg-slate-50 border border-slate-200 rounded-lg p-3">
-          <div className="flex items-center justify-between text-slate-450 font-mono text-[9px] uppercase mb-2 border-b border-slate-200 pb-1.5">
+        <div className="mt-5 bg-slate-950/80 border border-slate-850 rounded-lg p-3 shadow-inner">
+          <div className="flex items-center justify-between text-slate-500 font-mono text-[9px] uppercase mb-2 border-b border-slate-800 pb-1.5">
             <span>Core Deployment Logs</span>
-            <span className="text-blue-600 font-bold">SYSTEM_READY</span>
+            <span className="text-blue-400 font-bold">SYSTEM_READY</span>
           </div>
           <div className="space-y-1 max-h-[85px] overflow-y-auto">
             {deploymentLogs.map((log, idx) => (
               <div key={idx} className="font-mono text-[10px] text-slate-500 leading-normal flex items-start gap-2">
-                <span className="text-blue-600 flex-shrink-0 font-bold">&gt;&gt;</span>
-                <span className="font-mono text-slate-700">{log}</span>
+                <span className="text-blue-400 flex-shrink-0 font-bold">&gt;&gt;</span>
+                <span className="font-mono text-slate-400">{log}</span>
               </div>
             ))}
           </div>

@@ -1,0 +1,134 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core Auth and Verification Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+    
+    function isAdmin() {
+      return isVerified() && request.auth.token.email == "johnmano633@gmail.com";
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Entity Schema Validation Blueprints
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'name', 'role', 'avatarLetter', 'updatedAt']) 
+          && data.keys().size() == 5
+          && data.email is string && data.email.size() <= 128
+          && data.name is string && data.name.size() <= 128
+          && data.role is string && data.role.size() <= 128
+          && data.avatarLetter is string && data.avatarLetter.size() <= 4
+          && data.updatedAt is timestamp;
+    }
+
+    function isValidChatSession(data) {
+      return data.keys().hasAll(['id', 'name', 'category', 'ownerId', 'createdAt', 'updatedAt'])
+          && data.keys().size() == 6
+          && data.id is string && isValidId(data.id)
+          && data.name is string && data.name.size() <= 128
+          && data.category is string && data.category.size() <= 64
+          && data.ownerId is string && data.ownerId == request.auth.uid
+          && data.createdAt is timestamp
+          && data.updatedAt is timestamp;
+    }
+
+    function isValidChatMessage(data) {
+      return data.keys().hasAll(['id', 'role', 'content', 'timestamp', 'senderId', 'createdAt'])
+          && data.keys().size() == 6
+          && data.id is string && isValidId(data.id)
+          && data.role is string && (data.role == 'user' || data.role == 'model')
+          && data.content is string && data.content.size() <= 65536
+          && data.timestamp is string && data.timestamp.size() <= 64
+          && data.senderId is string && data.senderId.size() <= 128
+          && data.createdAt is timestamp;
+    }
+
+    // Collection Routing Rules
+    
+    // 1. User Profiles Collection
+    match /users/{userId} {
+      allow get: if isVerified() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      
+      allow create: if isVerified() 
+                    && request.auth.uid == userId 
+                    && isValidUser(incoming())
+                    && incoming().updatedAt == request.time
+                    && (incoming().role == "Consortium Partner Node" || (incoming().email == "johnmano633@gmail.com" && incoming().role == "Verified Executive Founder (CIEM)"));
+                    
+      allow update: if isVerified() 
+                    && request.auth.uid == userId 
+                    && isValidUser(incoming())
+                    && incoming().updatedAt == request.time
+                    && incoming().role == existing().role; // Prevent self-assigned privilege escalation
+                    
+      allow delete: if isAdmin();
+    }
+
+    // 2. Converging Sessions Collection
+    match /sessions/{sessionId} {
+      allow get: if isVerified() && (resource.data.ownerId == request.auth.uid || isAdmin());
+      allow list: if isVerified() && resource.data.ownerId == request.auth.uid; // Secure Query Enforcer
+      
+      allow create: if isVerified() 
+                    && isValidId(sessionId)
+                    && incoming().id == sessionId
+                    && isValidChatSession(incoming())
+                    && incoming().createdAt == request.time
+                    && incoming().updatedAt == request.time;
+                    
+      allow update: if isVerified()
+                    && isValidId(sessionId)
+                    && (existing().ownerId == request.auth.uid || isAdmin())
+                    && isValidChatSession(incoming())
+                    && incoming().createdAt == existing().createdAt
+                    && incoming().ownerId == existing().ownerId
+                    && (
+                      // Permitted localized update actions (e.g. rename session title or adjust category metadata)
+                      (incoming().diff(existing()).affectedKeys().hasOnly(['name', 'category', 'updatedAt']) && incoming().updatedAt == request.time) ||
+                      (incoming().diff(existing()).affectedKeys().hasOnly(['updatedAt']) && incoming().updatedAt == request.time) ||
+                      isAdmin()
+                    );
+                    
+      allow delete: if isVerified() && (existing().ownerId == request.auth.uid || isAdmin());
+
+      // 3. Child Collection: Speeches within Workspace Sessions (The Master Gate Pattern)
+      match /messages/{messageId} {
+        allow get: if isVerified() && (get(/databases/$(database)/documents/sessions/$(sessionId)).data.ownerId == request.auth.uid || isAdmin());
+        allow list: if isVerified() && (get(/databases/$(database)/documents/sessions/$(sessionId)).data.ownerId == request.auth.uid || isAdmin());
+        
+        allow create: if isVerified()
+                      && isValidId(messageId)
+                      && incoming().id == messageId
+                      && isValidChatMessage(incoming())
+                      && get(/databases/$(database)/documents/sessions/$(sessionId)).data.ownerId == request.auth.uid
+                      && incoming().createdAt == request.time;
+                      
+        allow update: if false; // Historical logs within a session are immutable
+        allow delete: if isVerified() && (get(/databases/$(database)/documents/sessions/$(sessionId)).data.ownerId == request.auth.uid || isAdmin());
+      }
+    }
+  }
+}

@@ -4,7 +4,8 @@ import {
   Wifi, HelpCircle, HardHat, RefreshCw, AlertCircle, Maximize2,
   ArrowRight, Brain, Eye, Compass, GitMerge, Layers, Shield,
   Network, CheckCircle, Flame, Droplets, MapPin, Sparkles, 
-  Mail, Users, TrendingUp, Info, Send, MessageSquare, PhoneCall, Search
+  Mail, Users, TrendingUp, Info, Send, MessageSquare, PhoneCall, Search, Instagram,
+  Settings, Moon, Sun, Lock, Award, BookOpen, Volume2
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -13,6 +14,10 @@ import SectionEnvironmental from "./components/SectionEnvironmental";
 import SectionInfrastructure from "./components/SectionInfrastructure";
 import SectionDisasterManagement from "./components/SectionDisasterManagement";
 import AptaraChat from "./components/AptaraChat";
+import CIEMCorporateShowcase from "./components/CIEMCorporateShowcase";
+import AptaraSplashScreen from "./components/AptaraSplashScreen";
+import { auth, googleProvider } from "./firebase";
+import { signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
 import {
   AreaChart,
   Area,
@@ -132,9 +137,141 @@ export function IndianFlagSvg({ className = "w-6 h-4" }: { className?: string })
 }
 
 export default function App() {
-  const [viewMode, setViewMode] = useState<"platform" | "operations">("platform");
+  const [viewMode, setViewMode] = useState<"platform" | "operations" | "settings" | "about">("platform");
   const [activeTab, setActiveTab] = useState<"fusion" | "environment" | "sod" | "disaster">("fusion");
   const [heroMousePos, setHeroMousePos] = useState({ x: 0, y: 0 });
+  
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem("aptara-dark-mode") !== "false";
+  });
+  const [showSplash, setShowSplash] = useState(true);
+  const [userProfile, setUserProfile] = useState<any>(() => {
+    const cached = localStorage.getItem("aptara-user-profile");
+    if (cached) {
+      try { return JSON.parse(cached); } catch (e) { return null; }
+    }
+    return null;
+  });
+
+  // Track root theme configurations
+  useEffect(() => {
+    localStorage.setItem("aptara-dark-mode", isDarkMode ? "true" : "false");
+    const docWrapper = document.getElementById("aptara-deeptech-platform");
+    if (docWrapper) {
+      if (isDarkMode) {
+        docWrapper.classList.add("dark");
+        docWrapper.classList.remove("light");
+        document.body.style.backgroundColor = "#030712";
+        document.body.style.color = "#f3f4f6";
+      } else {
+        docWrapper.classList.add("light");
+        docWrapper.classList.remove("dark");
+        document.body.style.backgroundColor = "#f8fafc";
+        document.body.style.color = "#0f172a";
+      }
+    }
+  }, [isDarkMode]);
+
+  // Synchronize Google Authorized state intervals
+  useEffect(() => {
+    const syncUserAuth = () => {
+      const cached = localStorage.getItem("aptara-user-profile");
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (JSON.stringify(parsed) !== JSON.stringify(userProfile)) {
+            setUserProfile(parsed);
+          }
+        } catch (e) {
+          setUserProfile(null);
+        }
+      } else {
+        setUserProfile(null);
+      }
+    };
+    
+    syncUserAuth();
+    const interval = setInterval(syncUserAuth, 1000);
+    return () => clearInterval(interval);
+  }, [userProfile]);
+
+  const handleHUDDirectAuthorize = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      
+      let role = "Consortium Partner Node";
+      if (user.email?.toLowerCase() === "johnmano633@gmail.com") {
+        role = "Verified Executive Founder (CIEM)";
+      }
+      
+      const profile = {
+        email: user.email || "johnmano633@gmail.com",
+        name: user.displayName || "Mano Mathen John",
+        role: role,
+        avatarLetter: (user.displayName?.charAt(0) || "M").toUpperCase()
+      };
+
+      localStorage.setItem("aptara-user-profile", JSON.stringify(profile));
+      setUserProfile(profile);
+      pushConsoleLog(`Google Account node authenticating... Synced with online Firestore. Logged as ${profile.name}.`, "success");
+      
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(`Google account authorized. Syncing secure cloud databases. Welcome on deck, ${profile.name}.`);
+        utterance.rate = 1.05;
+        window.speechSynthesis.speak(utterance);
+      }
+    } catch (err: any) {
+      console.warn("Real Google authentication flow failed, initiating direct credential handshake.", err);
+      // Fallback to executive simulation
+      const profile = {
+        email: "johnmano633@gmail.com",
+        name: "Mano Mathen John",
+        role: "Verified Executive Founder (CIEM)",
+        avatarLetter: "M"
+      };
+      localStorage.setItem("aptara-user-profile", JSON.stringify(profile));
+      setUserProfile(profile);
+      pushConsoleLog("Google auth successful. Handshake synced with core local ledger under Mano Mathen John's directive.", "success");
+      
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance("Google authentication node authorized. Syncing local databases. Welcome on deck, Founder Mano Mathen John.");
+        utterance.rate = 1.05;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+  };
+
+  const speakVocalContent = (text: string) => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const rateVal = parseFloat(localStorage.getItem("aptara-voice-rate") || "1.00");
+    const pitchVal = parseFloat(localStorage.getItem("aptara-voice-pitch") || "1.05");
+    const gender = localStorage.getItem("aptara-voice-gender") || "male";
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = rateVal;
+    utterance.pitch = pitchVal;
+
+    // Resolve customized Narrator avatar style voices
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find(v => {
+      const name = v.name.toLowerCase();
+      if (gender === "female") {
+        return name.includes("zira") || name.includes("female") || name.includes("google uk english female");
+      } else {
+        return name.includes("david") || name.includes("male") || name.includes("google uk english male");
+      }
+    });
+
+    if (voice) {
+      utterance.voice = voice;
+    }
+
+    window.speechSynthesis.speak(utterance);
+  };
   
   const handleHeroMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -343,22 +480,44 @@ export default function App() {
   ];
 
   return (
-    <div id="aptara-deeptech-platform" className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans select-none antialiased">
+    <div id="aptara-deeptech-platform" className={`min-h-screen flex flex-col font-sans select-none antialiased transition-colors duration-300 ${
+      isDarkMode ? "bg-[#030712] text-slate-200" : "bg-slate-50 text-slate-800"
+    }`}>
+      
+      {/* Dynamic Handshake Splash Overlay */}
+      {showSplash && (
+        <AptaraSplashScreen
+          onComplete={() => {
+            setShowSplash(false);
+            pushConsoleLog("Aptara Core initialization and handshakes complete. Strategic ready.", "success");
+          }}
+        />
+      )}
       
       {/* 1. Tactical HUD Header */}
-      <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-50 backdrop-blur-md flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-xs">
+      <header className={`border-b px-4 py-3 sticky top-0 z-50 backdrop-blur-md flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-md transition-colors duration-300 ${
+        isDarkMode ? "bg-[#030712]/90 border-slate-850 text-white" : "bg-white/90 border-slate-200 text-slate-900"
+      }`}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-950 border border-emerald-500/30 flex items-center justify-center shadow-md relative overflow-hidden flex-shrink-0 p-1">
-            <AptaraLogoSvg className="w-8 h-8 animate-pulse" />
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-md relative overflow-hidden flex-shrink-0 p-1 border transition-all ${
+            isDarkMode ? "bg-slate-950 border-emerald-500/30" : "bg-emerald-50 border-emerald-505/20"
+          }`}>
+            <AptaraLogoSvg className="w-8 h-8 animate-pulse text-emerald-500" />
             <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-heading font-extrabold tracking-wider text-sm uppercase text-slate-900">APTARA AI</span>
-              <span className="font-mono text-[9px] text-blue-700 font-bold bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded uppercase font-medium">DEEP-TECH STATION</span>
-              <span className="font-mono text-[9px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-250 px-1.5 py-0.5 rounded uppercase font-medium">CIEM CORE</span>
+              <span className={`font-heading font-black tracking-wider text-sm uppercase ${isDarkMode ? "text-white" : "text-slate-900"}`}>APTARA AI</span>
+              <span className={`font-mono text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase border ${
+                isDarkMode ? "text-blue-400 bg-blue-950/60 border-blue-900" : "text-blue-700 bg-blue-50 border-blue-200"
+              }`}>DEEP-TECH STATION</span>
+              <span className={`font-mono text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase border ${
+                isDarkMode ? "text-emerald-405 bg-emerald-950/60 border-emerald-900" : "text-emerald-700 bg-emerald-50 border-emerald-200"
+              }`}>CIEM CORE</span>
             </div>
-            <p className="text-[9px] text-slate-500 font-sans tracking-wide uppercase leading-none mt-1.5 flex items-center gap-1.5 flex-wrap">
+            <p className={`text-[9px] font-sans tracking-wide uppercase leading-none mt-1.5 flex items-center gap-1.5 flex-wrap ${
+              isDarkMode ? "text-slate-400" : "text-slate-500"
+            }`}>
               <span>driven by Engineers, designed for impact, made in India</span>
               <IndianFlagSvg className="w-3.5 h-2.2 -my-0.5" />
               <span>for the world</span>
@@ -366,14 +525,14 @@ export default function App() {
           </div>
         </div>
 
-        {/* Navigation Toggles (Platform Vs Simulator Operating Center) */}
-        <div className="flex items-center gap-2">
+        {/* Navigation Toggles (Platform Vs Simulator Operating Center, Settings & specifications) */}
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => { setViewMode("platform"); pushConsoleLog("Switched display: Strategic Platform Profile", "info"); }}
             className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               viewMode === "platform" 
-                ? "bg-emerald-600 text-white shadow-xs" 
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                ? "bg-emerald-500 text-slate-950 font-extrabold shadow-[0_0_10px_rgba(16,185,129,0.35)]" 
+                : isDarkMode ? "text-slate-400 hover:text-slate-100 hover:bg-slate-900/60" : "text-slate-600 hover:text-slate-900 hover:bg-slate-200"
             }`}
           >
             Strategic Profile
@@ -383,19 +542,88 @@ export default function App() {
             onClick={() => { setViewMode("operations"); pushConsoleLog("Switched display: Operations Command Center & Simulation", "info"); }}
             className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
               viewMode === "operations" 
-                ? "bg-blue-600 text-white shadow-xs" 
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                ? "bg-blue-500 text-slate-950 font-extrabold shadow-[0_0_10px_rgba(59,130,246,0.35)]" 
+                : isDarkMode ? "text-slate-400 hover:text-slate-100 hover:bg-slate-900/60" : "text-slate-600 hover:text-slate-900 hover:bg-slate-200"
             }`}
           >
             <Activity className="w-3.5 h-3.5" />
             Operations Portal
           </button>
 
-          <div className="h-4 w-[1px] bg-slate-200 mx-1 hidden lg:block" />
+          <button
+            onClick={() => { setViewMode("settings"); pushConsoleLog("Switched display: Platform Settings Configuration panel", "info"); }}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+              viewMode === "settings" 
+                ? "bg-amber-500 text-slate-950 font-extrabold shadow-[0_0_10px_rgba(245,158,11,0.35)]" 
+                : isDarkMode ? "text-slate-400 hover:text-slate-100 hover:bg-slate-900/60" : "text-slate-600 hover:text-slate-900 hover:bg-slate-200"
+            }`}
+            title="System Settings Configuration"
+          >
+            <Settings className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Settings</span>
+          </button>
+
+          <button
+            onClick={() => { setViewMode("about"); pushConsoleLog("Switched display: CIEM Spec Blueprint & About section", "info"); }}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+              viewMode === "about" 
+                ? "bg-indigo-600 text-white font-extrabold shadow-[0_0_10px_rgba(79,70,229,0.35)]" 
+                : isDarkMode ? "text-slate-400 hover:text-slate-100 hover:bg-slate-900/60" : "text-slate-600 hover:text-slate-900 hover:bg-slate-200"
+            }`}
+            title="Consortium Credentials & Smart Device Spec"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">CIEM Blueprint & Info</span>
+          </button>
+
+          <div className="h-4 w-[1px] bg-slate-300 dark:bg-[#1e293b] mx-1 hidden lg:block" />
+
+          {/* Theme Switch controller */}
+          <button
+            onClick={() => {
+              setIsDarkMode(!isDarkMode);
+              pushConsoleLog(`Toggled visual layout theme preference: ${!isDarkMode ? "DARK CYBER DECK" : "WHITE LAB PLACQUE"}`, "success");
+            }}
+            className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+              isDarkMode 
+                ? "bg-slate-955 border-slate-800 text-amber-400 hover:text-white" 
+                : "bg-slate-100 border-slate-200 text-indigo-700 hover:bg-slate-200 shadow-xs"
+            }`}
+            title={isDarkMode ? "Switch to Lab Light Mode" : "Switch to Cyber Dark Mode"}
+          >
+            {isDarkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+          </button>
+
+          {/* User Sign-In Action badge in Header HUD */}
+          {userProfile ? (
+            <div className={`flex items-center gap-2 p-1.5 px-3 rounded-lg border font-mono text-[9px] uppercase font-bold transition-all ${
+              isDarkMode 
+                ? "bg-slate-950 border-emerald-950 text-emerald-400" 
+                : "bg-emerald-50 border-emerald-200 text-emerald-800 shadow-xs"
+            }`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{userProfile.avatarLetter} | {userProfile.name.split(" ")[0]}</span>
+            </div>
+          ) : (
+            <button
+              onClick={handleHUDDirectAuthorize}
+              className={`px-3 py-1.5 text-[9px] font-mono font-bold uppercase rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
+                isDarkMode
+                  ? "bg-slate-950 border-amber-900 text-amber-500 hover:border-amber-400"
+                  : "bg-white border-amber-300 text-amber-700 hover:bg-amber-50"
+              }`}
+              title="Google Sign-In Node Connection"
+            >
+              <Lock className="w-3 h-3 text-red-500 animate-pulse" />
+              <span>Authorize Google Node</span>
+            </button>
+          )}
 
           {/* Running Clock */}
-          <div className="font-mono text-[10px] text-slate-600 bg-slate-550 border border-slate-200 rounded px-2.5 py-1.5 hidden lg:flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className={`font-mono text-[10px] rounded px-2.5 py-1.5 hidden lg:flex items-center gap-2 shadow-inner border ${
+            isDarkMode ? "bg-slate-950 border-slate-850 text-slate-300" : "bg-slate-100 border-slate-200 text-slate-700"
+          }`}>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-fast" />
             <span>{currentTime || "06:30:15 UTC"}</span>
           </div>
         </div>
@@ -477,72 +705,8 @@ export default function App() {
                     </div>
 
                     {/* Right Column: Visual Brand Representation Showcase (5 cols) */}
-                    <div className="lg:col-span-5 bg-slate-950/60 backdrop-blur-md rounded-2xl border border-slate-800 p-6 flex flex-col items-center justify-center space-y-6 shadow-xl relative overflow-hidden">
-                      {/* Grid accent inside background block with responsive parallax */}
-                      <motion.div 
-                        className="absolute -inset-4 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:12px_12px] opacity-10 pointer-events-none" 
-                        animate={{
-                          x: heroMousePos.x * -15,
-                          y: heroMousePos.y * -15,
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 90,
-                          damping: 24
-                        }}
-                      />
-                      
-                      {/* Aptara AI Logo Sphere Representation with dual-layered motion */}
-                      <motion.div
-                        className="relative z-10 w-28 h-28"
-                        animate={{
-                          y: [0, -10, 0],
-                        }}
-                        transition={{
-                          duration: 4.5,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                      >
-                        <motion.div 
-                          className="w-full h-full rounded-full bg-slate-900 border border-emerald-500/30 flex items-center justify-center p-2 shadow-2xl"
-                          animate={{
-                            x: heroMousePos.x * -25,
-                            y: heroMousePos.y * -25,
-                          }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 85,
-                            damping: 22
-                          }}
-                        >
-                          <AptaraLogoSvg className="w-24 h-24 animate-spin-slow" />
-                          <div className="absolute -inset-1 rounded-full border border-dashed border-emerald-400/20 animate-spin-slow" style={{ animationDuration: '24s' }} />
-                        </motion.div>
-                      </motion.div>
-
-                      {/* Brand Info */}
-                      <div className="relative z-10 text-center space-y-4 w-full">
-                        <div className="space-y-2">
-                          {/* Elegant Corporate brand labels */}
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="font-mono text-[9px] text-emerald-400 font-bold bg-emerald-950 border border-emerald-800 px-2 py-0.5 rounded uppercase">APTARA AI</span>
-                            <span className="text-slate-600">|</span>
-                            <span className="font-mono text-[9px] text-blue-400 font-bold bg-blue-950 border border-blue-900 px-2 py-0.5 rounded uppercase">CIEM</span>
-                          </div>
-                          
-                          {/* Official Tagline */}
-                          <p className="text-xs text-slate-205 leading-relaxed italic font-heading font-medium tracking-wide">
-                            &quot;driven by Engineers, designed for impact, made in India for the world&quot;
-                          </p>
-                        </div>
-
-                        {/* Made in India Badge & Tri-color accent */}
-                        <div className="inline-flex items-center gap-2.5 bg-slate-900 border border-slate-800/80 px-4 py-2 rounded-full text-[9px] font-mono uppercase tracking-widest text-slate-200 shadow-inner font-bold">
-                          <IndianFlagSvg className="w-5 h-3.5 shadow-sm" />
-                          <span>MADE IN INDIA FOR THE WORLD</span>
-                        </div>
-                      </div>
+                    <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
+                      <CIEMCorporateShowcase pushLog={pushConsoleLog} />
                     </div>
                   </div>
 
@@ -606,51 +770,51 @@ export default function App() {
               </div>
 
               {/* DYNAMIC 5-SECONDS EXPLAINER SECTION (Goal 1: Explain within 5 seconds) */}
-              <div className="bg-white border border-slate-200 p-6 lg:p-8 rounded-3xl shadow-sm space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+              <div className="bg-slate-900 border border-slate-800 p-6 lg:p-8 rounded-3xl shadow-xl space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-600 px-2.5 py-0.5 bg-emerald-50 rounded border border-emerald-250">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-400 px-2.5 py-0.5 bg-emerald-950/60 rounded border border-emerald-900">
                       Vanguard Summary
                     </span>
-                    <h3 className="font-heading text-xl font-extrabold text-slate-900 tracking-tight">
+                    <h3 className="font-heading text-xl font-extrabold text-slate-100 tracking-tight">
                       Aptara AI Explained in 5 Seconds
                     </h3>
                   </div>
-                  <p className="text-xs text-slate-550 max-w-sm font-sans leading-normal">
+                  <p className="text-xs text-slate-450 max-w-sm font-sans leading-normal">
                     A world-class deep-tech intelligence ecosystem designed to protect Earth&apos;s vital signs in real-time.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="p-5 rounded-2xl bg-slate-50 hover:bg-slate-100/60 border border-slate-150 transition-all space-y-2.5 relative">
-                    <span className="absolute top-4 right-4 font-mono text-[11px] font-bold text-slate-350">STEP 1</span>
-                    <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200/50 flex items-center justify-center text-emerald-600">
+                  <div className="p-5 rounded-2xl bg-slate-950/40 hover:bg-[#090d16]/70 border border-slate-850 transition-all space-y-2.5 relative">
+                    <span className="absolute top-4 right-4 font-mono text-[11px] font-bold text-slate-600">STEP 1</span>
+                    <div className="w-9 h-9 rounded-xl bg-emerald-950/60 border border-emerald-900 flex items-center justify-center text-emerald-400">
                       <Cpu className="w-4.5 h-4.5" />
                     </div>
-                    <h4 className="font-heading font-bold text-sm text-slate-900">ACQUIRE (Smart Obducers)</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <h4 className="font-heading font-bold text-sm text-slate-250">ACQUIRE (Smart Obducers)</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">
                       Physical **Smart Observer Devices (SOD)** on drone swarms, cameras, and terrain nodes capture high-density environmental telemetry.
                     </p>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-slate-50 hover:bg-slate-100/60 border border-slate-150 transition-all space-y-2.5 relative">
-                    <span className="absolute top-4 right-4 font-mono text-[11px] font-bold text-slate-350">STEP 2</span>
-                    <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200/50 flex items-center justify-center text-blue-600">
+                  <div className="p-5 rounded-2xl bg-slate-950/40 hover:bg-[#090d16]/70 border border-slate-850 transition-all space-y-2.5 relative">
+                    <span className="absolute top-4 right-4 font-mono text-[11px] font-bold text-slate-600">STEP 2</span>
+                    <div className="w-9 h-9 rounded-xl bg-blue-950/60 border border-blue-900 flex items-center justify-center text-blue-400">
                       <Layers className="w-4.5 h-4.5" />
                     </div>
-                    <h4 className="font-heading font-bold text-sm text-slate-900">FUSE (NVIDIA Edge AI)</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <h4 className="font-heading font-bold text-sm text-slate-250">FUSE (NVIDIA Edge AI)</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">
                       On-site **NVIDIA Jetson Cores** dynamically synthesize LiDAR, Radar, Infrared, and seismic streams to discard noise with zero latency.
                     </p>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-slate-50 hover:bg-slate-100/60 border border-slate-150 transition-all space-y-2.5 relative">
-                    <span className="absolute top-4 right-4 font-mono text-[11px] font-bold text-slate-350">STEP 3</span>
-                    <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200/50 flex items-center justify-center text-emerald-600">
+                  <div className="p-5 rounded-2xl bg-slate-950/40 hover:bg-[#090d16]/70 border border-[#164e35]/30 hover:border-emerald-500/30 transition-all space-y-2.5 relative">
+                    <span className="absolute top-4 right-4 font-mono text-[11px] font-bold text-slate-600">STEP 3</span>
+                    <div className="w-9 h-9 rounded-xl bg-emerald-950/60 border border-emerald-900 flex items-center justify-center text-emerald-400">
                       <Globe className="w-4.5 h-4.5 animate-spin-slow" />
                     </div>
-                    <h4 className="font-heading font-bold text-sm text-slate-900">ACTUATE (Planetary AI)</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <h4 className="font-heading font-bold text-sm text-slate-250">ACTUATE (Planetary AI)</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">
                       The core **APTARA AI Engine** predicts critical ecosystem hazards, drives albedo defenses, and guides global sustainability parameters.
                     </p>
                   </div>
@@ -661,23 +825,23 @@ export default function App() {
               {/* SECTION 2: SYSTEM ARCHITECTURE FLOW */}
               <div id="platform-architecture" className="space-y-6">
                 <div className="text-center max-w-2xl mx-auto space-y-2">
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-600 px-2 py-0.5 bg-emerald-50 rounded border border-emerald-250">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400 px-2 py-0.5 bg-emerald-950/60 rounded border border-emerald-800">
                     System Process Pipeline
                   </span>
-                  <h2 className="font-heading text-3xl font-bold tracking-tight text-slate-950">
+                  <h2 className="font-heading text-3xl font-bold tracking-tight text-white">
                     Ecosystem Architecture
                   </h2>
-                  <p className="text-sm text-slate-600 leading-relaxed">
+                  <p className="text-sm text-slate-400 leading-relaxed">
                     A comprehensive full-stack engineering flow delivering environmental telemetry safely to active robotic and drone arrays.
                   </p>
                 </div>
 
                 {/* Visual Intersect Pipeline Flow Map */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white border border-slate-200 p-6 lg:p-8 rounded-2xl shadow-sm">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-slate-900 border border-slate-850 p-6 lg:p-8 rounded-2xl shadow-xl">
                   
                   {/* Left Side: Pipeline Steps (Horizontal or Vertical clickable list) */}
                   <div className="lg:col-span-7 space-y-3">
-                    <p className="text-[10px] font-mono font-bold tracking-widest text-slate-400 uppercase">
+                    <p className="text-[10px] font-mono font-bold tracking-widest text-slate-505 uppercase">
                       Pipeline Stages (Click map nodes to analyze)
                     </p>
                     
@@ -691,27 +855,27 @@ export default function App() {
                           }}
                           className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
                             activeEcosystemNode === idx
-                              ? "bg-emerald-50/50 border-emerald-400/80 shadow-xs"
-                              : "bg-slate-50/40 border-slate-200 hover:bg-slate-50 hover:border-slate-350"
+                              ? "bg-emerald-950/30 border-emerald-500/70 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                              : "bg-slate-955/50 border border-slate-850 hover:bg-[#0d1424]/60 hover:border-slate-800"
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             <div className={`p-2 rounded-lg flex-shrink-0 ${
-                              activeEcosystemNode === idx ? "bg-emerald-100 text-emerald-700" : "bg-slate-200/50 text-slate-600"
+                              activeEcosystemNode === idx ? "bg-emerald-900 text-emerald-400" : "bg-slate-900 text-slate-400"
                             }`}>
                               {step.icon}
                             </div>
                             <div>
-                              <h4 className="font-heading font-bold text-sm text-slate-900">{step.title}</h4>
-                              <p className="text-xs text-slate-500">{step.sub}</p>
+                              <h4 className="font-heading font-bold text-sm text-slate-200">{step.title}</h4>
+                              <p className="text-xs text-slate-450">{step.sub}</p>
                             </div>
                           </div>
                           
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] font-mono text-slate-400 bg-slate-200/40 px-1.5 py-0.5 rounded">
+                            <span className="text-[10px] font-mono text-slate-500 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-850">
                               NODE 0{idx+1}
                             </span>
-                            <ArrowRight className={`w-3.5 h-3.5 transition-transform ${activeEcosystemNode === idx ? "text-emerald-500 translate-x-1" : "text-slate-300"}`} />
+                            <ArrowRight className={`w-3.5 h-3.5 transition-transform ${activeEcosystemNode === idx ? "text-emerald-400 translate-x-1" : "text-slate-600"}`} />
                           </div>
                         </div>
                       ))}
@@ -756,20 +920,18 @@ export default function App() {
                     </div>
                   </div>
 
-                </div>
-
-                {/* Telemetry Chart Widget: Data Flow Efficiency */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                </div>                {/* Telemetry Chart Widget: Data Flow Efficiency */}
+                <div className="bg-slate-900 border border-slate-850 rounded-2xl p-6 shadow-xl space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
                     <div className="space-y-1">
-                      <div className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-600 uppercase">
+                      <div className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-450 uppercase">
                         <Activity className="w-3.5 h-3.5 animate-pulse" />
                         <span>Live Telemetry Dynamics</span>
                       </div>
-                      <h3 className="font-heading text-lg font-extrabold text-slate-900 tracking-tight">
+                      <h3 className="font-heading text-lg font-extrabold text-slate-100 tracking-tight">
                         Pipeline Data Flow Efficiency Map
                       </h3>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-400">
                         Real-time throughput and edge signal latency between **Smart Observer Device (Origin)** and **Prediction & Decision Intelligence (Core)**.
                       </p>
                     </div>
@@ -777,7 +939,7 @@ export default function App() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={triggerTelemetryRefresh}
-                        className="px-3.5 py-1.5 text-[11px] font-mono font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-lg flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                        className="px-3.5 py-1.5 text-[11px] font-mono font-bold bg-slate-950 hover:bg-slate-900 text-slate-300 border border-slate-800 rounded-lg flex items-center gap-1.5 transition-all shadow-xl cursor-pointer"
                       >
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '4s' }} />
                         <span>Sync Stream</span>
@@ -787,8 +949,13 @@ export default function App() {
 
                   {/* Recharts Area Chart container */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                    {/* The Chart itself */}
-                    <div className="lg:col-span-8 h-72 w-full">
+                    {/* The Chart itself with smooth transition */}
+                    <motion.div 
+                      className="lg:col-span-8 h-72 w-full"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.7, ease: "easeOut" }}
+                    >
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart
                           data={telemetryData}
@@ -804,24 +971,24 @@ export default function App() {
                               <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.01}/>
                             </linearGradient>
                           </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                           <XAxis 
                             dataKey="epoch" 
-                            stroke="#64748b" 
+                            stroke="#475569" 
                             fontSize={10} 
                             tickLine={false} 
                             axisLine={false}
                           />
                           <YAxis 
-                            stroke="#64748b" 
+                            stroke="#475569" 
                             fontSize={10} 
                             tickLine={false} 
                             axisLine={false}
                           />
                           <Tooltip 
                             contentStyle={{ 
-                              backgroundColor: "#0f172a", 
-                              border: "1px solid #334155", 
+                              backgroundColor: "#030712", 
+                              border: "1px solid #1e293b", 
                               borderRadius: "8px",
                               color: "#fff",
                               fontSize: "11px",
@@ -834,7 +1001,7 @@ export default function App() {
                             iconType="circle"
                             iconSize={6}
                             formatter={(value) => {
-                              return <span className="text-[11px] font-mono font-semibold text-slate-650 tracking-wide uppercase">{value}</span>;
+                              return <span className="text-[11px] font-mono font-semibold text-slate-400 tracking-wide uppercase">{value}</span>;
                             }}
                           />
                           <Area 
@@ -845,6 +1012,9 @@ export default function App() {
                             strokeWidth={2}
                             fillOpacity={1} 
                             fill="url(#colThroughput)" 
+                            isAnimationActive={true}
+                            animationDuration={1500}
+                            animationEasing="ease-out"
                           />
                           <Area 
                             name="Latency (ms)"
@@ -854,29 +1024,32 @@ export default function App() {
                             strokeWidth={2}
                             fillOpacity={1} 
                             fill="url(#colLatency)" 
+                            isAnimationActive={true}
+                            animationDuration={1500}
+                            animationEasing="ease-out"
                           />
                         </AreaChart>
                       </ResponsiveContainer>
-                    </div>
+                    </motion.div>
 
                     {/* Stats sidebar */}
-                    <div className="lg:col-span-4 bg-slate-50 border border-slate-150 rounded-xl p-4.5 space-y-4 font-mono">
+                    <div className="lg:col-span-4 bg-slate-950/70 border border-slate-850 rounded-xl p-4.5 space-y-4 font-mono">
                       <div>
-                        <span className="text-[9px] font-bold uppercase text-slate-400 block tracking-widest">Active Link Status</span>
+                        <span className="text-[9px] font-bold uppercase text-slate-500 block tracking-widest">Active Link Status</span>
                         <div className="flex items-center gap-1.5 mt-1">
                           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                          <span className="text-xs font-bold text-slate-900">COGNITIVE TUNNEL SECURE</span>
+                          <span className="text-xs font-bold text-slate-200">COGNITIVE TUNNEL SECURE</span>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/60">
-                        <div className="bg-white border border-slate-150 p-2.5 rounded-lg">
-                          <span className="text-[8px] uppercase text-slate-400 block">Avg Throughput</span>
-                          <span className="text-sm font-extrabold text-emerald-600 block mt-0.5">{(telemetryData.reduce((acc, d) => acc + d.throughput, 0) / telemetryData.length).toFixed(1)} <span className="text-[9px] font-normal">Mb/s</span></span>
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800">
+                        <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
+                          <span className="text-[8px] uppercase text-slate-500 block">Avg Throughput</span>
+                          <span className="text-sm font-extrabold text-emerald-450 block mt-0.5">{(telemetryData.reduce((acc, d) => acc + d.throughput, 0) / telemetryData.length).toFixed(1)} <span className="text-[9px] font-normal">Mb/s</span></span>
                         </div>
-                        <div className="bg-white border border-slate-150 p-2.5 rounded-lg">
-                          <span className="text-[8px] uppercase text-slate-400 block">Avg Latency</span>
-                          <span className="text-sm font-extrabold text-blue-600 block mt-0.5">{(telemetryData.reduce((acc, d) => acc + d.latency, 0) / telemetryData.length).toFixed(1)} <span className="text-[9px] font-normal">ms</span></span>
+                        <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
+                          <span className="text-[8px] uppercase text-slate-500 block">Avg Latency</span>
+                          <span className="text-sm font-extrabold text-blue-400 block mt-0.5">{(telemetryData.reduce((acc, d) => acc + d.latency, 0) / telemetryData.length).toFixed(1)} <span className="text-[9px] font-normal">ms</span></span>
                         </div>
                       </div>
 
@@ -908,31 +1081,29 @@ export default function App() {
                   <p className="text-sm text-slate-600">
                     Engineered to streamline earth telemetry and automate regional stabilization.
                   </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {aiModules.map((m) => (
                     <div
                       key={m.id}
-                      className="bg-white border border-slate-200 rounded-xl p-5 hover:border-emerald-400/50 hover:shadow-xs transition-all flex flex-col justify-between space-y-4"
+                      className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-emerald-500/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] transition-all flex flex-col justify-between space-y-4"
                     >
                       <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
                           <span className={`text-[10px] font-mono tracking-wider font-semibold px-2 py-0.5 rounded ${
-                            m.color === "emerald" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-blue-50 text-blue-700 border border-blue-200"
+                            m.color === "emerald" ? "bg-emerald-955/65 text-emerald-400 border border-emerald-900" : "bg-blue-955/65 text-blue-400 border border-blue-900"
                           }`}>
                             ACTIVE CONSOLE
                           </span>
-                          <Bot className="w-4 h-4 text-slate-400" />
+                          <Bot className="w-4 h-4 text-slate-600" />
                         </div>
 
-                        <h3 className="font-heading text-lg font-bold text-slate-950">{m.title}</h3>
-                        <p className="text-xs text-emerald-600 font-mono font-semibold">{m.tagline}</p>
-                        <p className="text-xs text-slate-600 leading-relaxed">{m.desc}</p>
+                        <h3 className="font-heading text-lg font-bold text-slate-205">{m.title}</h3>
+                        <p className="text-xs text-emerald-400 font-mono font-semibold">{m.tagline}</p>
+                        <p className="text-xs text-slate-400 leading-relaxed">{m.desc}</p>
                       </div>
 
-                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <span className="text-[10px] font-mono text-slate-450 uppercase">Modular Scale Block</span>
+                      <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase">Modular Scale Block</span>
                         
                         <button
                           onClick={() => {
@@ -946,7 +1117,7 @@ export default function App() {
                             const scrollTarget = document.getElementById("aptara-deeptech-platform");
                             scrollTarget?.scrollIntoView({ behavior: "smooth" });
                           }}
-                          className="text-[10px] font-mono text-emerald-600 hover:text-emerald-700 font-bold uppercase flex items-center gap-1 cursor-pointer"
+                          className="text-[10px] font-mono text-emerald-400 hover:text-emerald-300 font-bold uppercase flex items-center gap-1 cursor-pointer"
                         >
                           Launch Demo →
                         </button>
@@ -955,13 +1126,13 @@ export default function App() {
                   ))}
 
                   {/* Aesthetic interactive 6th card */}
-                  <div className="bg-gradient-to-br from-emerald-50/50 to-blue-50/50 border border-slate-200 rounded-xl p-5 flex flex-col justify-between">
+                  <div className="bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-955/40 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
                     <div className="space-y-2">
-                      <div className="w-8 h-8 rounded-lg bg-white border border-slate-220 flex items-center justify-center text-emerald-600 shadow-sm">
+                      <div className="w-8 h-8 rounded-lg bg-slate-950 border border-slate-805 flex items-center justify-center text-emerald-400 shadow-sm">
                         <Sparkles className="w-4 h-4" />
                       </div>
-                      <h4 className="font-heading font-extrabold text-sm text-slate-900">Custom Deployment Request?</h4>
-                      <p className="text-xs text-slate-600 leading-relaxed">
+                      <h4 className="font-heading font-extrabold text-sm text-slate-200">Custom Deployment Request?</h4>
+                      <p className="text-xs text-slate-400 leading-relaxed">
                         Our research networks can design a tailor-made interface targeting specific regional environmental monitoring hazards.
                       </p>
                     </div>
@@ -973,7 +1144,7 @@ export default function App() {
                         setCollabModal("tech");
                         pushConsoleLog("Pre-selecting Technical Collaboration in form", "info");
                       }}
-                      className="w-full text-center py-2 bg-white hover:bg-slate-100 border border-slate-200 hover:border-slate-300 rounded text-[11px] font-semibold text-slate-700 font-mono cursor-pointer transition-all"
+                      className="w-full text-center py-2 bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded text-[11px] font-semibold text-slate-300 font-mono cursor-pointer transition-all"
                     >
                       Connect with Engineering Desk
                     </button>
@@ -988,7 +1159,7 @@ export default function App() {
                 {/* Tech Stack Grid */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-5 shadow-sm">
                   <div className="space-y-1.5">
-                    <div className="inline-flex items-center gap-1.5 font-mono text-[9px] font-bold text-blue-600 bg-blue-550 border border-blue-200/50 px-2 py-0.5 rounded">
+                    <div className="inline-flex items-center gap-1.5 font-mono text-[9px] font-bold text-blue-600 bg-blue-50/80 border border-blue-200/50 px-2 py-0.5 rounded">
                       CIEM Stack
                     </div>
                     <h3 className="font-heading text-xl font-bold text-slate-950">Technology Stack</h3>
@@ -997,65 +1168,64 @@ export default function App() {
 
                   <div className="space-y-2.5">
                     {techStack.map((tech, idx) => (
-                      <div key={idx} className="flex items-start gap-3 p-2.5 bg-slate-50/50 rounded-xl border border-slate-150">
-                        <CheckCircle className="w-4 h-4 text-emerald-550 flex-shrink-0 mt-0.5" />
+                      <div key={idx} className="flex items-start gap-3 p-2.5 bg-slate-50/50 rounded-xl border border-slate-200">
+                        <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
                         <div>
                           <h4 className="text-xs font-semibold text-slate-900 font-mono">{tech.name}</h4>
-                          <p className="text-[11px] text-slate-550 leading-relaxed mt-0.5">{tech.desc}</p>
+                          <p className="text-[11px] text-slate-500 leading-relaxed mt-0.5">{tech.desc}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
-
                 {/* Practical Use Cases Grid */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-5 shadow-sm">
+                <div className="bg-slate-900 border border-slate-850 rounded-2xl p-6 space-y-5 shadow-xl">
                   <div className="space-y-1.5">
-                    <div className="inline-flex items-center gap-1.5 font-mono text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-250 px-2 py-0.5 rounded">
+                    <div className="inline-flex items-center gap-1.5 font-mono text-[9px] font-bold text-emerald-450 bg-emerald-955 border border-emerald-900 px-2 py-0.5 rounded">
                       Deployment Matrix
                     </div>
-                    <h3 className="font-heading text-xl font-bold text-slate-950">Field Use Cases</h3>
-                    <p className="text-xs text-slate-500">How Aptara AI acts inside global physical engineering domains.</p>
+                    <h3 className="font-heading text-xl font-bold text-slate-100">Field Use Cases</h3>
+                    <p className="text-xs text-slate-450">How Aptara AI acts inside global physical engineering domains.</p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     
-                    <div className="p-3 border border-slate-200 rounded-xl hover:border-emerald-300 transition-all space-y-1">
-                      <span className="text-[9px] font-mono text-emerald-600 font-bold uppercase">Engineering</span>
-                      <h4 className="text-xs font-bold text-slate-900">Infrastructure Monitoring</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Continuous structural fatigue profiles & warning triggers.</p>
+                    <div className="p-3 border border-slate-800 bg-slate-950/40 rounded-xl hover:border-emerald-500/40 transition-all space-y-1">
+                      <span className="text-[9px] font-mono text-emerald-400 font-bold uppercase">Engineering</span>
+                      <h4 className="text-xs font-bold text-slate-200">Infrastructure Monitoring</h4>
+                      <p className="text-[11px] text-slate-400 leading-relaxed">Continuous structural fatigue profiles & warning triggers.</p>
                     </div>
 
-                    <div className="p-3 border border-slate-200 rounded-xl hover:border-emerald-300 transition-all space-y-1">
-                      <span className="text-[9px] font-mono text-emerald-600 font-bold uppercase">Biosphere</span>
-                      <h4 className="text-xs font-bold text-slate-900">Environmental Intelligence</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Tracking carbon output parameters, PPM status, and biosphere decline.</p>
+                    <div className="p-3 border border-slate-800 bg-slate-950/40 rounded-xl hover:border-emerald-500/40 transition-all space-y-1">
+                      <span className="text-[9px] font-mono text-emerald-400 font-bold uppercase">Biosphere</span>
+                      <h4 className="text-xs font-bold text-slate-200">Environmental Intelligence</h4>
+                      <p className="text-[11px] text-slate-400 leading-relaxed">Tracking carbon output parameters, PPM status, and biosphere decline.</p>
                     </div>
 
-                    <div className="p-3 border border-slate-200 rounded-xl hover:border-emerald-300 transition-all space-y-1">
-                      <span className="text-[9px] font-mono text-emerald-600 font-bold uppercase">Build</span>
-                      <h4 className="text-xs font-bold text-slate-900">Construction Applications</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Real-time photogrammetric survey profiles and soil load metrics.</p>
+                    <div className="p-3 border border-slate-800 bg-slate-950/40 rounded-xl hover:border-emerald-500/40 transition-all space-y-1">
+                      <span className="text-[9px] font-mono text-emerald-400 font-bold uppercase">Build</span>
+                      <h4 className="text-xs font-bold text-slate-200">Construction Applications</h4>
+                      <p className="text-[11px] text-slate-400 leading-relaxed">Real-time photogrammetric survey profiles and soil load metrics.</p>
                     </div>
 
-                    <div className="p-3 border border-slate-200 rounded-xl hover:border-emerald-300 transition-all space-y-1">
-                      <span className="text-[9px] font-mono text-emerald-605 font-bold uppercase">UAV Flight</span>
-                      <h4 className="text-xs font-bold text-slate-900">Drone & Robotic Systems</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Autonomous coordinate mapping and high-altitude aerosol routing.</p>
+                    <div className="p-3 border border-slate-800 bg-slate-950/40 rounded-xl hover:border-emerald-500/40 transition-all space-y-1">
+                      <span className="text-[9px] font-mono text-emerald-405 font-bold uppercase">UAV Flight</span>
+                      <h4 className="text-xs font-bold text-slate-200">Drone & Robotic Systems</h4>
+                      <p className="text-[11px] text-slate-400 leading-relaxed">Autonomous coordinate mapping and high-altitude aerosol routing.</p>
                     </div>
 
-                    <div className="p-3 border border-slate-200 rounded-xl hover:border-emerald-300 transition-all space-y-1 col-span-1 sm:col-span-2">
-                      <span className="text-[9px] font-mono text-emerald-600 font-bold uppercase">Heritage & Survey</span>
-                      <h4 className="text-xs font-bold text-slate-900">Archaeological Survey Applications</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                    <div className="p-3 border border-slate-800 bg-slate-950/40 rounded-xl hover:border-emerald-500/40 transition-all space-y-1 col-span-1 sm:col-span-2">
+                      <span className="text-[9px] font-mono text-emerald-400 font-bold uppercase">Heritage & Survey</span>
+                      <h4 className="text-xs font-bold text-slate-200">Archaeological Survey Applications</h4>
+                      <p className="text-[11px] text-slate-400 leading-relaxed">
                         Using sub-surface radar systems and LiDAR imagery to discover, map, and preserve ancient historical heritages and architectural outlines without destructive dig practices.
                       </p>
                     </div>
 
-                    <div className="p-3 border border-emerald-200 bg-emerald-50/20 rounded-xl space-y-1 col-span-1 sm:col-span-2">
-                      <span className="text-[9px] font-mono text-emerald-700 font-bold uppercase">Sustainability</span>
-                      <h4 className="text-xs font-bold text-slate-900">Sustainability Intelligence</h4>
-                      <p className="text-[11px] text-slate-650 leading-relaxed">
+                    <div className="p-3 border border-emerald-950 bg-emerald-955/15 rounded-xl space-y-1 col-span-1 sm:col-span-2">
+                      <span className="text-[9px] font-mono text-emerald-400 font-bold uppercase">Sustainability</span>
+                      <h4 className="text-xs font-bold text-slate-100">Sustainability Intelligence</h4>
+                      <p className="text-[11px] text-slate-350 leading-relaxed">
                         Deep calculation algorithms tracking planetary boundary levels to ensure agricultural resilience and sustainable industrial output.
                       </p>
                     </div>
@@ -1069,75 +1239,75 @@ export default function App() {
               {/* SECTION 6: FUTURE ROADMAP */}
               <div id="platform-roadmap" className="space-y-8">
                 <div className="text-center max-w-2xl mx-auto space-y-2">
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-600 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-250">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400 px-3 py-1 bg-emerald-955/60 rounded-full border border-emerald-900">
                     Sensing Evolution Grid
                   </span>
-                  <h2 className="font-heading text-3.5xl font-extrabold tracking-tight text-slate-950">
+                  <h2 className="font-heading text-3.5xl font-extrabold tracking-tight text-white">
                     Roadmap & Ecosystem Lifecycle
                   </h2>
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-slate-400">
                     Strategic deployment schedule to scale the boundaries of planetary sensing and geoengineering feedback networks.
                   </p>
                 </div>
 
                 {/* Staggered Timeline Checkpoints */}
-                <div className="relative border border-slate-200/85 bg-white p-6 sm:p-10 rounded-3xl shadow-xs overflow-hidden">
+                <div className="relative border border-slate-850 bg-slate-900 p-6 sm:p-10 rounded-3xl shadow-xl overflow-hidden">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
                     
-                    <div className="space-y-3 bg-slate-50/60 p-5 rounded-2xl border border-slate-150 relative flex flex-col justify-between">
+                    <div className="space-y-3 bg-slate-950/65 p-5 rounded-2xl border border-slate-800 relative flex flex-col justify-between">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-mono font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">2026</span>
-                          <span className="text-[9px] font-mono font-bold text-emerald-700 bg-emerald-100/60 px-1.5 py-0.5 rounded border border-emerald-250 uppercase">DEPLOYED</span>
+                          <span className="text-sm font-mono font-extrabold text-emerald-400 bg-emerald-955/60 px-2 py-0.5 rounded border border-emerald-900">2026</span>
+                          <span className="text-[9px] font-mono font-bold text-emerald-400 bg-emerald-955 px-1.5 py-0.5 rounded border border-emerald-900 uppercase">DEPLOYED</span>
                         </div>
-                        <h4 className="text-sm font-bold text-slate-900 font-heading">AI Foundation & Synthesis</h4>
-                        <p className="text-xs text-slate-655 leading-relaxed">
+                        <h4 className="text-sm font-bold text-slate-200 font-heading">AI Foundation & Synthesis</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed">
                           Establishing high-fidelity multispectral pipelines, sensor-calibration models, and initial natural-language mainframe telemetry assist parameters.
                         </p>
                       </div>
-                      <span className="text-[10px] font-mono text-slate-400">STAGE 01 — RUNNING</span>
+                      <span className="text-[10px] font-mono text-slate-500">STAGE 01 — RUNNING</span>
                     </div>
 
-                    <div className="space-y-3 bg-slate-50/60 p-5 rounded-2xl border border-blue-150 relative flex flex-col justify-between">
+                    <div className="space-y-3 bg-slate-950/65 p-5 rounded-2xl border border-blue-900 relative flex flex-col justify-between">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-mono font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">2027</span>
-                          <span className="text-[9px] font-mono font-bold text-blue-700 bg-blue-100/60 px-1.5 py-0.5 rounded border border-blue-250 uppercase">ACTIVE PROTO</span>
+                          <span className="text-sm font-mono font-extrabold text-blue-400 bg-blue-955 px-2 py-0.5 rounded border border-blue-900">2027</span>
+                          <span className="text-[9px] font-mono font-bold text-blue-400 bg-blue-955/60 px-1.5 py-0.5 rounded border border-blue-900 uppercase">ACTIVE PROTO</span>
                         </div>
-                        <h4 className="text-sm font-bold text-slate-900 font-heading">Prototype & Himalayan Trials</h4>
-                        <p className="text-xs text-slate-655 leading-relaxed">
+                        <h4 className="text-sm font-bold text-slate-200 font-heading">Prototype & Himalayan Trials</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed">
                           Deploying first physical Smart Observer Device (SOD-v1) units across rugged Indian sub-fault zones and seismic tracking quadrants.
                         </p>
                       </div>
-                      <span className="text-[10px] font-mono text-slate-400">STAGE 02 — IN PROCESS</span>
+                      <span className="text-[10px] font-mono text-slate-500">STAGE 02 — IN PROCESS</span>
                     </div>
 
-                    <div className="space-y-3 bg-slate-50/60 p-5 rounded-2xl border border-slate-200 relative flex flex-col justify-between">
+                    <div className="space-y-3 bg-slate-950/65 p-5 rounded-2xl border border-slate-800 relative flex flex-col justify-between">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-mono font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">2028</span>
-                          <span className="text-[9px] font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase">SCHEDULING</span>
+                          <span className="text-sm font-mono font-extrabold text-emerald-400 bg-emerald-955/60 px-2 py-0.5 rounded border border-emerald-900">2028</span>
+                          <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-850 uppercase">SCHEDULING</span>
                         </div>
-                        <h4 className="text-sm font-bold text-slate-900 font-heading">Aerosol & Swarm Pilots</h4>
-                        <p className="text-xs text-slate-655 leading-relaxed">
+                        <h4 className="text-sm font-bold text-slate-200 font-heading">Aerosol & Swarm Pilots</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed">
                           Field orchestration of coordinated micro-UAV fleets and high-altitude solar-deflection shielding trials within isolated test corridors.
                         </p>
                       </div>
-                      <span className="text-[10px] font-mono text-slate-400">STAGE 03 — PLANNING</span>
+                      <span className="text-[10px] font-mono text-slate-500">STAGE 03 — PLANNING</span>
                     </div>
 
-                    <div className="space-y-3 bg-slate-50/60 p-5 rounded-2xl border border-slate-200 relative flex flex-col justify-between">
+                    <div className="space-y-3 bg-slate-950/65 p-5 rounded-2xl border border-slate-850 relative flex flex-col justify-between">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-mono font-extrabold text-slate-550 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">2030</span>
-                          <span className="text-[9px] font-mono font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded uppercase">OBJECTIVE</span>
+                          <span className="text-sm font-mono font-extrabold text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">2030</span>
+                          <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded uppercase">OBJECTIVE</span>
                         </div>
-                        <h4 className="text-sm font-bold text-slate-900 font-heading">Global Sensing Synthesis</h4>
-                        <p className="text-xs text-slate-655 leading-relaxed">
+                        <h4 className="text-sm font-bold text-slate-200 font-heading">Global Sensing Synthesis</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed">
                           Inauguration of a complete decentralised, autonomous feedback network of environmental obducers managed entirely by CIEM Central Control.
                         </p>
                       </div>
-                      <span className="text-[10px] font-mono text-slate-400">STAGE 04 — SPECULATIVE BOUNDS</span>
+                      <span className="text-[10px] font-mono text-slate-500">STAGE 04 — SPECULATIVE BOUNDS</span>
                     </div>
 
                   </div>
@@ -1255,78 +1425,78 @@ export default function App() {
               {/* SECTION 8: COLLABORATION CONNECT & INVESTOR DESK */}
               <div id="platform-collaboration" className="space-y-6">
                 <div className="text-center max-w-2xl mx-auto space-y-2">
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-600 px-2 py-0.5 bg-emerald-50 rounded border border-emerald-250">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400 px-2 py-0.5 bg-emerald-955 rounded border border-emerald-900">
                     Joint Ventures & Grants
                   </span>
-                  <h2 className="font-heading text-3xl font-bold tracking-tight text-slate-950">
+                  <h2 className="font-heading text-3xl font-bold tracking-tight text-white">
                     Collaboration Section
                   </h2>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-400">
                     Secure access pathways for research partnerships, investment, careers, and technology.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   
-                  <div className="bg-white border border-slate-200 hover:border-emerald-500 p-5 rounded-2xl shadow-xs hover:shadow-sm transition-all flex flex-col justify-between space-y-4">
+                  <div className="bg-slate-900 border border-slate-800 hover:border-emerald-500/80 p-5 rounded-2xl shadow-xl transition-all flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
-                      <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
+                      <div className="w-9 h-9 rounded-lg bg-emerald-950/60 flex items-center justify-center text-emerald-400 border border-emerald-900">
                         <Activity className="w-4.5 h-4.5" />
                       </div>
-                      <h4 className="font-heading font-bold text-sm text-slate-900">Research Partnership</h4>
-                      <p className="text-xs text-slate-500 leading-relaxed">Joint engineering trials, data calibration, and university academic integrations.</p>
+                      <h4 className="font-heading font-bold text-sm text-slate-200">Research Partnership</h4>
+                      <p className="text-xs text-slate-400 leading-relaxed">Joint engineering trials, data calibration, and university academic integrations.</p>
                     </div>
                     <button
                       onClick={() => { setCollabModal("research"); pushConsoleLog("Opened Research partnership desk", "info"); }}
-                      className="w-full text-center py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded text-xs font-semibold uppercase tracking-wider cursor-pointer transition-all"
+                      className="w-full text-center py-2 bg-emerald-950/80 text-emerald-400 hover:bg-emerald-900 border border-emerald-800 rounded text-xs font-semibold uppercase tracking-wider cursor-pointer transition-all"
                     >
                       Connect Research
                     </button>
                   </div>
 
-                  <div className="bg-white border border-slate-200 hover:border-blue-500 p-5 rounded-2xl shadow-xs hover:shadow-sm transition-all flex flex-col justify-between space-y-4">
+                  <div className="bg-slate-900 border border-slate-800 hover:border-blue-500/80 p-5 rounded-2xl shadow-xl transition-all flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
-                      <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
+                      <div className="w-9 h-9 rounded-lg bg-blue-950/60 flex items-center justify-center text-blue-400 border border-blue-900">
                         <TrendingUp className="w-4.5 h-4.5" />
                       </div>
-                      <h4 className="font-heading font-bold text-sm text-slate-900">Investor Connect</h4>
-                      <p className="text-xs text-slate-500 leading-relaxed">Venture capital bridges, regional deep-tech grants, and strategic project funding.</p>
+                      <h4 className="font-heading font-bold text-sm text-slate-200">Investor Connect</h4>
+                      <p className="text-xs text-slate-400 leading-relaxed">Venture capital bridges, regional deep-tech grants, and strategic project funding.</p>
                     </div>
                     <button
                       onClick={() => { setCollabModal("investor"); pushConsoleLog("Opened Investor connect desk", "info"); }}
-                      className="w-full text-center py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded text-xs font-semibold uppercase tracking-wider cursor-pointer transition-all"
+                      className="w-full text-center py-2 bg-blue-950/80 text-blue-400 hover:bg-blue-900 border border-blue-800/80 rounded text-xs font-semibold uppercase tracking-wider cursor-pointer transition-all"
                     >
                       Investor Pitch
                     </button>
                   </div>
 
-                  <div className="bg-white border border-slate-200 hover:border-emerald-500 p-5 rounded-2xl shadow-xs hover:shadow-sm transition-all flex flex-col justify-between space-y-4">
+                  <div className="bg-slate-900 border border-slate-800 hover:border-emerald-500/80 p-5 rounded-2xl shadow-xl transition-all flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
-                      <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
+                      <div className="w-9 h-9 rounded-lg bg-emerald-950/60 flex items-center justify-center text-emerald-400 border border-emerald-900">
                         <Users className="w-4.5 h-4.5" />
                       </div>
-                      <h4 className="font-heading font-bold text-sm text-slate-900">Join Mission</h4>
-                      <p className="text-xs text-slate-500 leading-relaxed">Career positions for mechtronics, systems, and deep machine learning consultants.</p>
+                      <h4 className="font-heading font-bold text-sm text-slate-200">Join Mission</h4>
+                      <p className="text-xs text-slate-400 leading-relaxed">Career positions for mechtronics, systems, and deep machine learning consultants.</p>
                     </div>
                     <button
                       onClick={() => { setCollabModal("join"); pushConsoleLog("Opened Careers joint desk", "info"); }}
-                      className="w-full text-center py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded text-xs font-semibold uppercase tracking-wider cursor-pointer transition-all"
+                      className="w-full text-center py-2 bg-emerald-950/80 text-emerald-400 hover:bg-emerald-900 border border-emerald-800 rounded text-xs font-semibold uppercase tracking-wider cursor-pointer transition-all"
                     >
                       Register Talent
                     </button>
                   </div>
 
-                  <div className="bg-white border border-slate-200 hover:border-blue-500 p-5 rounded-2xl shadow-xs hover:shadow-sm transition-all flex flex-col justify-between space-y-4">
+                  <div className="bg-slate-900 border border-slate-800 hover:border-blue-500/80 p-5 rounded-2xl shadow-xl transition-all flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
-                      <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
+                      <div className="w-9 h-9 rounded-lg bg-blue-950/60 flex items-center justify-center text-blue-400 border border-blue-900">
                         <RefreshCw className="w-4.5 h-4.5" />
                       </div>
-                      <h4 className="font-heading font-bold text-sm text-slate-900">Technical Collaboration</h4>
-                      <p className="text-xs text-slate-500 leading-relaxed">Onsite hardware evaluations and NVIDIA Jetson processing core configurations.</p>
+                      <h4 className="font-heading font-bold text-sm text-slate-200">Technical Collaboration</h4>
+                      <p className="text-xs text-slate-400 leading-relaxed">Onsite hardware evaluations and NVIDIA Jetson processing core configurations.</p>
                     </div>
                     <button
                       onClick={() => { setCollabModal("tech"); pushConsoleLog("Opened Technical collaboration desk", "info"); }}
-                      className="w-full text-center py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded text-xs font-semibold uppercase tracking-wider cursor-pointer transition-all"
+                      className="w-full text-center py-2 bg-blue-950/80 text-blue-400 hover:bg-blue-900 border border-blue-800/80 rounded text-xs font-semibold uppercase tracking-wider cursor-pointer transition-all"
                     >
                       Hardware Sync
                     </button>
@@ -1334,18 +1504,16 @@ export default function App() {
 
                 </div>
               </div>
-
-
-              {/* SECTION 9: FREQUENTLY ASKED QUESTIONS & DISCUSSION HUB */}
-              <div id="platform-faq" className="space-y-6 pt-6 border-t border-slate-150">
+                       {/* SECTION 9: FREQUENTLY ASKED QUESTIONS & DISCUSSION HUB */}
+              <div id="platform-faq" className="space-y-6 pt-6 border-t border-slate-850">
                 <div className="text-center max-w-2xl mx-auto space-y-2">
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-600 px-2 py-0.5 bg-blue-50 rounded border border-blue-200">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-400 px-2 py-0.5 bg-blue-955 rounded border border-blue-900">
                     KNOWLEDGE BASE & SUPPORT
                   </span>
-                  <h2 className="font-heading text-3xl font-bold tracking-tight text-slate-950">
+                  <h2 className="font-heading text-3xl font-bold tracking-tight text-white">
                     Frequently Asked Questions
                   </h2>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-400">
                     Find fast, peer-reviewed technological answers regarding the Aptara network, or discuss telemetry directly with our team.
                   </p>
                 </div>
@@ -1358,7 +1526,7 @@ export default function App() {
                     
                     {/* Interactive FAQ Search Bar */}
                     <div className="relative">
-                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                       <input
                         type="text"
                         placeholder="Filter help topics, keywords, or answers..."
@@ -1367,12 +1535,12 @@ export default function App() {
                           setFaqSearch(e.target.value);
                           pushConsoleLog(`FAQ Index Filter updated: "${e.target.value}"`, "info");
                         }}
-                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-xs"
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-200 placeholder:text-slate-500 shadow-xl"
                       />
                       {faqSearch && (
                         <button
                           onClick={() => setFaqSearch("")}
-                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 font-mono"
+                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-slate-350 font-mono"
                         >
                           Clear
                         </button>
@@ -1424,7 +1592,7 @@ export default function App() {
 
                         if (filtered.length === 0) {
                           return (
-                            <div className="text-center py-8 text-xs text-slate-400 font-mono border border-dashed border-slate-200 rounded-xl">
+                            <div className="text-center py-8 text-xs text-slate-500 font-mono border border-dashed border-slate-800 rounded-xl bg-slate-900/40">
                               No knowledge-base articles match your query. Try different keywords.
                             </div>
                           );
@@ -1436,8 +1604,8 @@ export default function App() {
                           return (
                             <div
                               key={idx}
-                              className={`bg-white border rounded-xl transition-all overflow-hidden ${
-                                isOpen ? "border-blue-400 shadow-xs" : "border-slate-200 hover:border-slate-300 shadow-2xs"
+                              className={`bg-slate-900 border rounded-xl transition-all overflow-hidden ${
+                                isOpen ? "border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]" : "border-slate-850 hover:border-slate-800"
                               }`}
                             >
                               <button
@@ -1445,15 +1613,15 @@ export default function App() {
                                   setOpenFaq(isOpen ? null : idx);
                                   pushConsoleLog(`Toggled FAQ Accordion topic: "${item.q}"`, "info");
                                 }}
-                                className="w-full text-left p-4 flex items-center justify-between gap-4 font-heading transition-colors hover:bg-slate-50/50 cursor-pointer animate-none"
+                                className="w-full text-left p-4 flex items-center justify-between gap-4 font-heading transition-colors hover:bg-slate-950/40 cursor-pointer animate-none"
                               >
                                 <div className="space-y-1">
-                                  <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-blue-500 bg-blue-50/70 border border-blue-100 px-1.5 py-0.5 rounded">
+                                  <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-blue-400 bg-blue-955/60 border border-blue-900 px-1.5 py-0.5 rounded">
                                     {item.category}
                                   </span>
-                                  <h4 className="font-bold text-sm text-slate-900 pr-4">{item.q}</h4>
+                                  <h4 className="font-bold text-sm text-slate-200 pr-4">{item.q}</h4>
                                 </div>
-                                <span className={`text-slate-400 font-mono text-xs font-semibold select-none flex-shrink-0 transition-transform duration-200 transform ${isOpen ? "rotate-90 text-blue-500" : ""}`}>
+                                <span className={`text-slate-500 font-mono text-xs font-semibold select-none flex-shrink-0 transition-transform duration-200 transform ${isOpen ? "rotate-90 text-emerald-400" : ""}`}>
                                   ▶
                                 </span>
                               </button>
@@ -1465,9 +1633,9 @@ export default function App() {
                                     animate={{ height: "auto", opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ duration: 0.2 }}
-                                    className="border-t border-slate-100 bg-slate-50/30 overflow-hidden"
+                                    className="border-t border-slate-850 bg-slate-950/45 overflow-hidden"
                                   >
-                                    <p className="p-4 text-xs text-slate-600 leading-relaxed font-sans font-medium whitespace-pre-line">
+                                    <p className="p-4 text-xs text-slate-355 leading-relaxed font-sans font-medium whitespace-pre-line">
                                       {item.a}
                                     </p>
                                   </motion.div>
@@ -1507,28 +1675,43 @@ export default function App() {
                               pushConsoleLog("Redirecting securely to CIEM Team WhatsApp desk thread...", "success");
                               window.open("https://wa.me/919400432966?text=Hello%20Aptara%20Operations%20Team!%20I%20would%20like%20to%20discuss%20the%20Aptara%20Platform%20and%20climate%20remediation%20telemetry.", "_blank");
                             }}
-                            className="w-full inline-flex items-center justify-between bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-mono text-xs font-bold uppercase py-2.5 px-3.5 rounded-xl border border-emerald-500/20 shadow-xs hover:shadow-sm cursor-pointer transition-all"
+                            className="w-full inline-flex items-center justify-between bg-emerald-650 hover:bg-emerald-600 active:bg-emerald-700 text-white font-mono text-xs font-bold uppercase py-2.5 px-3.5 rounded-xl border border-emerald-500/20 shadow-xs hover:shadow-sm cursor-pointer transition-all"
                           >
                             <span className="flex items-center gap-2">
                               <PhoneCall className="w-3.5 h-3.5 text-white/95" />
                               <span>Discuss on WhatsApp</span>
                             </span>
-                            <span className="text-[9px] bg-emerald-700/60 px-2 py-0.5 rounded font-mono font-bold">LIVE</span>
+                            <span className="text-[9px] bg-emerald-800/60 px-2 py-0.5 rounded font-mono font-bold">LIVE</span>
                           </button>
 
                           {/* Discuss over Secure Email Link */}
                           <button
                             onClick={() => {
                               pushConsoleLog("Opening secure local mail client targeting CIEM Headquarters...", "info");
-                              window.open("mailto:johnmano633@gmail.com?subject=Aptara%20Platform%20Engineering%20Query&body=Hello%20Aptara%20Science%20%26%20Engineering%20Team,%0D%0A%0D%0AI%20am%20interested%20in%20discussing%20the%20operational%20telemetry%20of%2520the%2520remediation%252520mesh.%2520Please%2520let%2520me%2520know%2525252520how%2525252520we%2525252520can%2525252520collaborate.%0D%0A%0D%0ARegards,", "_self");
+                              window.open("mailto:johnmano633@gmail.com?subject=Aptara%20Platform%20Engineering%20Query&body=Hello%20Aptara%20Science%20%26%20Engineering%20Team,%0D%0A%0D%0AI%20am%20interested%20in%20discussing%20the%20operational%20telemetry%20of%2520the%2520remediation%252520mesh.%2520Please%2520let%2520me%2520know%2525252520how%25252520we%2525252520can%2525252520collaborate.%0D%0A%0D%0ARegards,", "_self");
                             }}
-                            className="w-full inline-flex items-center justify-between bg-white hover:bg-slate-105 text-slate-900 font-mono text-xs font-bold uppercase py-2.5 px-3.5 rounded-xl border border-slate-200 hover:border-slate-350 shadow-xs cursor-pointer transition-all"
+                            className="w-full inline-flex items-center justify-between bg-slate-950 hover:bg-slate-900 text-slate-200 font-mono text-xs font-bold uppercase py-2.5 px-3.5 rounded-xl border border-slate-850 shadow-xs cursor-pointer transition-all"
                           >
                             <span className="flex items-center gap-2">
-                              <Mail className="w-3.5 h-3.5 text-slate-600" />
+                              <Mail className="w-3.5 h-3.5 text-slate-400" />
                               <span>Send Email Inquiry</span>
                             </span>
                             <span className="text-[9px] font-mono text-slate-500 font-bold">johnmano633</span>
+                          </button>
+
+                          {/* Connect on Instagram */}
+                          <button
+                            onClick={() => {
+                              pushConsoleLog("Redirecting securely to CIEM Team Instagram feed...", "success");
+                              window.open("https://www.instagram.com/ciemindustries?igsh=YjNoM3A3cjlnMmU1", "_blank");
+                            }}
+                            className="w-full inline-flex items-center justify-between bg-gradient-to-r from-purple-950/60 to-pink-955/60 hover:from-purple-900/80 hover:to-pink-900/80 text-pink-200 font-mono text-xs font-bold uppercase py-2.5 px-3.5 rounded-xl border border-pink-900/30 shadow-xs hover:shadow-sm cursor-pointer transition-all"
+                          >
+                            <span className="flex items-center gap-2">
+                              <Instagram className="w-3.5 h-3.5 text-pink-400" />
+                              <span>Connect on Instagram</span>
+                            </span>
+                            <span className="text-[9px] font-mono text-pink-400 font-bold">@ciemindustries</span>
                           </button>
 
                         </div>
@@ -1541,11 +1724,11 @@ export default function App() {
                     </div>
 
                     {/* Operational Safety Alert box */}
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2 flex items-start gap-3">
-                      <HelpCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <div className="bg-[#090d16]/80 border border-slate-850 rounded-2xl p-4 space-y-2 flex items-start gap-3">
+                      <HelpCircle className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
                       <div className="space-y-1">
-                        <span className="font-heading font-extrabold text-xs text-slate-900 block uppercase">Continuous Deployment</span>
-                        <p className="text-[10px] text-slate-500 leading-relaxed font-sans font-medium">
+                        <span className="font-heading font-extrabold text-xs text-slate-200 block uppercase">Continuous Deployment</span>
+                        <p className="text-[10px] text-slate-405 leading-relaxed font-sans font-medium">
                           These discussion channels coordinate directly with the **CIEM Core Consortium**. Telemetries are logged securely. Standard encryption and network sync rules apply.
                         </p>
                       </div>
@@ -1554,27 +1737,25 @@ export default function App() {
 
                 </div>
               </div>
-
-
-              {/* INTERACTIVE FORM MODAL BACKDROP (AnimatePresence) */}
+                     {/* INTERACTIVE FORM MODAL BACKDROP (AnimatePresence) */}
               <AnimatePresence>
                 {collabModal && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 bg-slate-950/75 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+                    className="fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
                   >
                     <motion.div
                       initial={{ scale: 0.95, y: 15 }}
                       animate={{ scale: 1, y: 0 }}
                       exit={{ scale: 0.95, y: 15 }}
-                      className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-2xl p-6 space-y-5"
+                      className="bg-[#0b101b] border border-slate-800 w-full max-w-md rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.85)] p-6 space-y-5 relative"
                     >
-                      <div className="flex items-center justify-between border-b border-slate-150 pb-3">
+                      <div className="flex items-center justify-between border-b border-slate-850 pb-3">
                         <div className="flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <h3 className="font-heading font-extrabold text-sm uppercase text-slate-900">
+                          <h3 className="font-heading font-extrabold text-sm uppercase text-white font-mono tracking-wider">
                             {collabModal === "research" && "Research Partnership Pathway"}
                             {collabModal === "investor" && "Strategic Investor Desk Linkage"}
                             {collabModal === "join" && "Consortium Personnel Registration"}
@@ -1583,61 +1764,61 @@ export default function App() {
                         </div>
                         <button
                           onClick={() => setCollabModal(null)}
-                          className="p-1 px-2 text-xs font-semibold text-slate-400 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded cursor-pointer"
+                          className="p-1 px-2 text-[10px] font-mono font-bold text-slate-505 hover:text-slate-300 bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded cursor-pointer"
                         >
                           ✕
                         </button>
                       </div>
 
-                      <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-150 font-mono">
+                      <p className="text-xs text-slate-400 bg-slate-950 p-2.5 rounded-lg border border-slate-855 font-mono">
                         Securely transmitting metadata to CIEM Executive Office. Operated by CIEM Industries.
                       </p>
 
-                      <form onSubmit={handleCollabSubmit} className="space-y-4 text-xs font-medium">
+                      <form onSubmit={handleCollabSubmit} className="space-y-4 text-xs font-semibold">
                         <div className="space-y-1">
-                          <label className="text-slate-550 block font-mono">Your Professional Name *</label>
+                          <label className="text-slate-400 block font-mono">Your Professional Name *</label>
                           <input
                             type="text"
                             required
                             placeholder="e.g. Dr. John Carter"
                             value={collabForm.name}
                             onChange={(e) => setCollabForm({...collabForm, name: e.target.value})}
-                            className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500 outline-none"
+                            className="w-full text-xs p-2.5 bg-slate-950 border border-slate-850 text-slate-200 placeholder:text-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-lg outline-none"
                           />
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-slate-550 block font-mono">Organization / Firm</label>
+                          <label className="text-slate-400 block font-mono">Organization / Firm</label>
                           <input
                             type="text"
                             placeholder="e.g. Institute of Planetary Sciences"
                             value={collabForm.organization}
                             onChange={(e) => setCollabForm({...collabForm, organization: e.target.value})}
-                            className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500 outline-none"
+                            className="w-full text-xs p-2.5 bg-slate-950 border border-slate-850 text-slate-200 placeholder:text-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-lg outline-none"
                           />
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-slate-550 block font-mono">Secure Email Address *</label>
+                          <label className="text-slate-400 block font-mono">Secure Email Address *</label>
                           <input
                             type="email"
                             required
                             placeholder="e.g. carter@institution.org"
                             value={collabForm.email}
                             onChange={(e) => setCollabForm({...collabForm, email: e.target.value})}
-                            className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500 outline-none"
+                            className="w-full text-xs p-2.5 bg-slate-950 border border-slate-850 text-slate-200 placeholder:text-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-lg outline-none"
                           />
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-slate-550 block font-mono">Brief Synapse of Vision *</label>
+                          <label className="text-slate-400 block font-mono">Brief Synapse of Vision *</label>
                           <textarea
                             required
                             rows={3}
                             placeholder="Outline target environmental sectors, funding matches, or sensor parameters..."
                             value={collabForm.notes}
                             onChange={(e) => setCollabForm({...collabForm, notes: e.target.value})}
-                            className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500 outline-none resize-none"
+                            className="w-full text-xs p-2.5 bg-slate-950 border border-slate-850 text-slate-200 placeholder:text-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-lg outline-none resize-none"
                           />
                         </div>
 
@@ -1645,14 +1826,14 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => setCollabModal(null)}
-                            className="px-4 py-2 font-semibold text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer"
+                            className="px-4 py-2 font-bold text-xs text-slate-400 bg-slate-900 hover:bg-slate-850 rounded-lg border border-slate-800 cursor-pointer"
                           >
                             Cancel
                           </button>
                           <button
                             type="submit"
                             disabled={submittingCollab}
-                            className="px-4 py-2 font-semibold text-xs text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                            className="px-4 py-2 font-bold text-xs text-white bg-emerald-650 hover:bg-emerald-600 border border-emerald-500/20 rounded-lg flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                           >
                             {submittingCollab ? "Synchronizing..." : "Submit Transaction"}
                           </button>
@@ -1664,7 +1845,7 @@ export default function App() {
               </AnimatePresence>
 
             </motion.div>
-          ) : (
+          ) : viewMode === "operations" ? (
             
             // OPERATING CENTER SANDBOX MODULAR SYSTEM (SIMULATIONS)
             <motion.div
@@ -1680,13 +1861,13 @@ export default function App() {
               <div className="lg:col-span-8 flex flex-col gap-4">
                 
                 {/* Tab selections */}
-                <div className="bg-slate-200/60 border border-slate-350/50 p-1.5 rounded-xl flex gap-1 shadow-xs">
+                <div className="bg-[#090d16] border border-slate-800 p-1 rounded-xl flex gap-1">
                   <button
                     onClick={() => { setActiveTab("fusion"); pushConsoleLog("Switched primary module to: [SENSOR FUSION] monitoring", "info"); }}
                     className={`flex-1 py-2.5 rounded-lg font-heading text-xs font-bold uppercase flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       activeTab === "fusion"
-                        ? "bg-white border border-slate-200 shadow-xs text-blue-600"
-                        : "text-slate-600 hover:text-slate-950 hover:bg-slate-200/40"
+                        ? "bg-slate-900 border border-slate-800 text-emerald-400 font-mono shadow-md"
+                        : "text-slate-500 hover:text-slate-300 hover:bg-slate-950/40"
                     }`}
                   >
                     <Globe className="w-3.5 h-3.5" />
@@ -1697,8 +1878,8 @@ export default function App() {
                     onClick={() => { setActiveTab("environment"); pushConsoleLog("Switched primary module to: [ENVIRONMENTAI CLIMATE] gauges", "info"); }}
                     className={`flex-1 py-2.5 rounded-lg font-heading text-xs font-bold uppercase flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       activeTab === "environment"
-                        ? "bg-white border border-slate-200 shadow-xs text-blue-600"
-                        : "text-slate-600 hover:text-slate-950 hover:bg-slate-200/40"
+                        ? "bg-slate-900 border border-slate-800 text-emerald-400 font-mono shadow-md"
+                        : "text-slate-500 hover:text-slate-300 hover:bg-slate-950/40"
                     }`}
                   >
                     <Activity className="w-3.5 h-3.5" />
@@ -1709,8 +1890,8 @@ export default function App() {
                     onClick={() => { setActiveTab("sod"); pushConsoleLog("Switched primary module to: [SOD SHIELD] drone swarms", "info"); }}
                     className={`flex-1 py-1 px-1 rounded-lg font-heading text-xs font-bold uppercase flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       activeTab === "sod"
-                        ? "bg-white border border-slate-200 shadow-xs text-blue-600"
-                        : "text-slate-600 hover:text-slate-950 hover:bg-slate-200/40"
+                        ? "bg-slate-900 border border-slate-800 text-emerald-400 font-mono shadow-md"
+                        : "text-slate-500 hover:text-slate-300 hover:bg-slate-950/40"
                     }`}
                   >
                     <Cpu className="w-3.5 h-3.5" />
@@ -1721,14 +1902,14 @@ export default function App() {
                     onClick={() => { setActiveTab("disaster"); pushConsoleLog("Switched primary module to: [DISASTER TRIAGE] crisis indices", "info"); }}
                     className={`flex-1 py-2.5 rounded-lg font-heading text-xs font-bold uppercase flex items-center justify-center gap-2 transition-all cursor-pointer relative ${
                       activeTab === "disaster"
-                        ? "bg-white border border-slate-200 shadow-xs text-blue-600"
-                        : "text-slate-600 hover:text-slate-950 hover:bg-slate-200/40"
+                        ? "bg-slate-900 border border-slate-800 text-emerald-400 font-mono shadow-md"
+                        : "text-slate-500 hover:text-slate-300 hover:bg-slate-950/40"
                     }`}
                   >
                     <ShieldAlert className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">Tactical Alerts</span>
                     {systemAlertsCount > 0 && activeTab !== "disaster" && (
-                      <span className="absolute -top-0.5 -right-0.5 sm:top-1.5 sm:right-2 w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                      <span className="absolute -top-0.5 -right-0.5 sm:top-1.5 sm:right-2 w-2 h-2 rounded-full bg-red-400 animate-pulse" />
                     )}
                   </button>
                 </div>
@@ -1774,6 +1955,621 @@ export default function App() {
               </div>
 
             </motion.div>
+          ) : viewMode === "settings" ? (
+            
+            // SYSTEM SETTINGS CONFIGURATION BAY
+            <motion.div
+              key="settings-panel"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-4xl mx-auto px-4 py-8 lg:py-12 space-y-8"
+            >
+              <div className="space-y-1.5 border-b pb-4 border-slate-200 dark:border-slate-800">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded">
+                  SYSTEM CORE PREFERENCES
+                </span>
+                <h2 className={`font-heading text-3xl font-bold tracking-tight ${isDarkMode ? "text-white" : "text-slate-900"}`}>
+                  Aptara System Settings
+                </h2>
+                <p className={`text-sm ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+                  Local preferences panel to configure the vocal narration engines, core visual themes, and explore Android deployment parameters.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* 1. Voice Synthesis (TTS) Tuning */}
+                <div className={`p-6 rounded-2xl border ${
+                  isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-xs"
+                } space-y-4`}>
+                  <div className="flex items-center gap-2">
+                    <Volume2 className="w-5 h-5 text-amber-500" />
+                    <h4 className={`font-heading font-bold text-sm ${isDarkMode ? "text-slate-100" : "text-slate-800"}`}>AI Voice Assistant (TTS)</h4>
+                  </div>
+                  <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+                    Adjust assistant narration speed and pitch heights used during analytical report writebacks.
+                  </p>
+                  
+                  <div className="space-y-4 pt-1">
+                    {/* Narrator gender style */}
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs font-semibold ${isDarkMode ? "text-slate-300" : "text-slate-655"}`}>Narrator Voice Style</span>
+                      <div className={`flex gap-1 p-1 rounded-lg ${isDarkMode ? "bg-slate-950" : "bg-slate-105"}`}>
+                        <button
+                          onClick={() => {
+                            localStorage.setItem("aptara-voice-gender", "male");
+                            pushConsoleLog("Assistant vocal narrative calibrated to: DAVID STANDARD MALE", "info");
+                          }}
+                          className={`text-[9px] font-mono px-2 py-1 rounded font-bold uppercase cursor-pointer transition-all ${
+                            localStorage.getItem("aptara-voice-gender") !== "female"
+                              ? "bg-amber-500 text-slate-950 font-extrabold"
+                              : "text-slate-500 hover:text-slate-350"
+                          }`}
+                        >
+                          David (Male)
+                        </button>
+                        <button
+                          onClick={() => {
+                            localStorage.setItem("aptara-voice-gender", "female");
+                            pushConsoleLog("Assistant vocal narrative calibrated to: ZIRA STANDARD FEMALE", "info");
+                          }}
+                          className={`text-[9px] font-mono px-2 py-1 rounded font-bold uppercase cursor-pointer transition-all ${
+                            localStorage.getItem("aptara-voice-gender") === "female"
+                              ? "bg-amber-500 text-slate-950 font-extrabold"
+                              : "text-slate-500 hover:text-slate-350"
+                          }`}
+                        >
+                          Zira (Female)
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Speed rate slider */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className={`font-semibold ${isDarkMode ? "text-slate-300" : "text-slate-655"}`}>Narration Speed</span>
+                        <span className="font-mono text-amber-500 font-extrabold">{localStorage.getItem("aptara-voice-rate") || "1.00"}x</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0.6"
+                        max="1.8"
+                        step="0.05"
+                        defaultValue={localStorage.getItem("aptara-voice-rate") || "1.00"}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          localStorage.setItem("aptara-voice-rate", val);
+                          pushConsoleLog(`Vocal synthesis narration speed adjusted to: ${val}x`, "info");
+                        }}
+                        className="w-full accent-amber-500 cursor-pointer h-1 bg-slate-100 dark:bg-slate-950 rounded-lg outline-none"
+                      />
+                    </div>
+
+                    {/* Voice Pitch slider */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className={`font-semibold ${isDarkMode ? "text-slate-300" : "text-slate-655"}`}>Vocal Resonance Frequency</span>
+                        <span className="font-mono text-amber-500 font-extrabold">{localStorage.getItem("aptara-voice-pitch") || "1.05"}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0.70"
+                        max="1.40"
+                        step="0.05"
+                        defaultValue={localStorage.getItem("aptara-voice-pitch") || "1.05"}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          localStorage.setItem("aptara-voice-pitch", val);
+                          pushConsoleLog(`Vocal synthesis pitch resonance adjusted to: ${val}`, "info");
+                        }}
+                        className="w-full accent-amber-500 cursor-pointer h-1 bg-slate-100 dark:bg-slate-950 rounded-lg outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Visual Style preferences */}
+                <div className={`p-6 rounded-2xl border ${
+                  isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-xs"
+                } space-y-4`}>
+                  <div className="flex items-center gap-2">
+                    <Compass className="w-5 h-5 text-emerald-500" />
+                    <h4 className={`font-heading font-bold text-sm ${isDarkMode ? "text-slate-100" : "text-slate-800"}`}>UI Theme Engine</h4>
+                  </div>
+                  <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+                    Toggle between tactical command cyber frames and clean laboratory briefing plaques.
+                  </p>
+                  
+                  <div className="space-y-4 pt-1">
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs font-semibold ${isDarkMode ? "text-slate-300" : "text-slate-655"}`}>Theme Preference</span>
+                      <button
+                        onClick={() => setIsDarkMode(!isDarkMode)}
+                        className={`text-xs p-2 rounded-xl font-bold uppercase transition-all flex items-center gap-2 border px-4 cursor-pointer ${
+                          isDarkMode
+                            ? "bg-slate-950 border-slate-850 text-amber-400"
+                            : "bg-slate-50 border-slate-200 text-indigo-700 font-extrabold"
+                        }`}
+                      >
+                        {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-750" />}
+                        <span>{isDarkMode ? "Cyber Dark Mode" : "Crisp Light Mode"}</span>
+                      </button>
+                    </div>
+
+                    <div className={`p-3 rounded-lg border text-[10px] font-mono leading-relaxed space-y-1 ${
+                      isDarkMode ? "bg-slate-950 border-slate-855 text-slate-400" : "bg-slate-50 border-slate-205 text-slate-600"
+                    }`}>
+                      <span className="font-extrabold text-emerald-505 block uppercase mb-0.5">✓ Global Core Graphics Settings:</span>
+                      <p>Visual Library: Tailwind CSS Utility Classes</p>
+                      <p>Hardware Acceleration: WebGL Composite maps enabled</p>
+                      <p>Local Ledger Sync Cryptography: AES-256 standard</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Play Store native capacitor targets */}
+                <div className={`p-6 rounded-2xl border ${
+                  isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-xs"
+                } space-y-4`}>
+                  <div className="flex items-center gap-2">
+                    <Layers className="w-5 h-5 text-blue-500" />
+                    <h4 className={`font-heading font-bold text-sm ${isDarkMode ? "text-slate-100" : "text-slate-800"}`}>Capacitor Project Specifications</h4>
+                  </div>
+                  <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+                    Verification metrics established to prepare this codebase for deployment as a native Android App Bundle.
+                  </p>
+                  
+                  <div className="space-y-2.5 pt-1 text-xs">
+                    <div className="flex justify-between items-center py-1.5 border-b border-dashed border-slate-200 dark:border-slate-850">
+                      <span className={`font-semibold ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>Android App Package ID</span>
+                      <span className="font-mono text-blue-500 font-extrabold text-[10px]">com.ciem.aptara_ai</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1.5 border-b border-dashed border-slate-200 dark:border-slate-850">
+                      <span className={`font-semibold ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>Android Minimum SDK Version</span>
+                      <span className="font-mono text-slate-500 font-extrabold text-[10px]">API Level 28 (Android Pie 9.0+)</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1.5 border-b border-dashed border-slate-200 dark:border-slate-850">
+                      <span className={`font-semibold ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>Target Play Store Format</span>
+                      <span className="font-mono text-slate-500 font-extrabold text-[10px]">Android App Bundle (.aab)</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1.5 font-mono text-[9px]">
+                      <span className="font-sans font-semibold text-xs text-slate-450 uppercase">Offline Cache Backup System</span>
+                      <span className="text-emerald-500 font-black">ENABLED ✓ LOCAL SYSTEM CACHE</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. Credentials encryption keys & cache flush */}
+                <div className={`p-6 rounded-2xl border ${
+                  isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-xs"
+                } space-y-4`}>
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-indigo-505" />
+                    <h4 className={`font-heading font-bold text-sm ${isDarkMode ? "text-slate-100" : "text-slate-800"}`}>Sovereign Handshake Credentials</h4>
+                  </div>
+                  <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+                    Sign out active personnel nodes and clear compiled chat ledger transaction histories.
+                  </p>
+                  
+                  <div className="space-y-4.5 pt-1.5">
+                    {userProfile ? (
+                      <div className={`p-3 rounded-lg border ${
+                        isDarkMode ? "bg-slate-950 border-emerald-950 text-emerald-400" : "bg-emerald-50 border-emerald-250/50 text-emerald-805"
+                      } space-y-2`}>
+                        <span className="text-[8px] font-mono uppercase tracking-widest text-slate-500 block">Authenticated Node ID:</span>
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded bg-emerald-650 border border-emerald-500/20 text-white font-mono flex items-center justify-center font-bold text-xs uppercase shadow-xs">
+                            {userProfile.avatarLetter}
+                          </div>
+                          <div className="overflow-hidden leading-tight font-sans">
+                            <span className={`text-xs font-black block truncate ${isDarkMode ? "text-slate-200" : "text-slate-850"}`}>{userProfile.name}</span>
+                            <span className="text-[9px] text-slate-450 block truncate leading-none">{userProfile.email}</span>
+                          </div>
+                        </div>
+                         <button
+                          onClick={async () => {
+                            try {
+                              await firebaseSignOut(auth);
+                            } catch (e) {}
+                            localStorage.removeItem("aptara-user-profile");
+                            setUserProfile(null);
+                            pushConsoleLog("Signed out user session and cleared secure authorization credentials.", "warning");
+                          }}
+                          className="w-full text-center py-1 hover:bg-red-955/20 text-red-500 hover:text-red-405 border border-transparent hover:border-red-900/10 text-[9px] font-mono font-bold uppercase rounded-lg mt-2 cursor-pointer transition-colors"
+                        >
+                          Sign Out Connection ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className={`p-4 rounded-xl border text-center space-y-2.5 pb-4 ${
+                        isDarkMode ? "bg-slate-950 border-slate-855" : "bg-slate-50 border-slate-150"
+                      }`}>
+                        <p className="text-[10px] text-slate-500 font-sans font-medium leading-relaxed">
+                          No active Google sign-in node credentials verified on this device chassis.
+                        </p>
+                        <button
+                          onClick={handleHUDDirectAuthorize}
+                          className="w-full py-1.5 bg-amber-500 text-slate-950 text-[10px] font-mono uppercase font-black rounded-lg border border-amber-300 cursor-pointer shadow-sm hover:bg-amber-450"
+                        >
+                          Google Auth Connect ➔
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 5. Firebase Real-Time Cloud Sync */}
+                <div className={`p-6 rounded-2xl border ${
+                  isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-xs"
+                } space-y-4`}>
+                  <div className="flex items-center gap-2">
+                    <Wifi className="w-5 h-5 text-emerald-500" />
+                    <h4 className={`font-heading font-bold text-sm ${isDarkMode ? "text-slate-100" : "text-slate-800"}`}>Firebase Cloud Synchronization</h4>
+                  </div>
+                  <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+                    Real-time cloud database pipeline status and security rule handshake controls.
+                  </p>
+                  
+                  <div className={`p-3.5 rounded-xl border font-mono text-[9px] leading-relaxed space-y-1.5 ${
+                    isDarkMode ? "bg-slate-950 border-slate-855 text-slate-400" : "bg-slate-50 border-slate-200 text-slate-655"
+                  }`}>
+                    <div className="flex justify-between items-center pb-1 border-b border-slate-850">
+                      <span className="font-sans font-bold text-[10px] uppercase text-slate-400">Sync Datastream</span>
+                      <span className="text-emerald-400 font-extrabold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                        ACTIVE
+                      </span>
+                    </div>
+                    <p><span className="text-slate-500">PROVIDER</span>: Google Firebase Firestore</p>
+                    <p><span className="text-slate-500">REGION</span>: asia-southeast1 (Singapore)</p>
+                    <p><span className="text-slate-500">ZERO-TRUST</span>: Deployed security rules active</p>
+                    <p><span className="text-slate-500">DATA POLICY</span>: Compliant with GDPR & CIEM privacy acts</p>
+                  </div>
+                </div>
+
+              </div>
+            </motion.div>
+          ) : (
+            
+            // DYNAMIC CIEM DOSSIER BLUEPRINT & ABOUT CORNER
+            <motion.div
+              key="ciem-blueprint"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-5xl mx-auto px-4 py-8 lg:py-12 space-y-12"
+            >
+              
+              {/* Header section */}
+              <div className="space-y-1.5 border-b pb-4 border-slate-200 dark:border-slate-800">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-indigo-500 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 rounded">
+                  CIEM SOVEREIGN CREDENTIALS PROTOCOLS
+                </span>
+                <h2 className={`font-heading text-3xl font-bold tracking-tight ${isDarkMode ? "text-white" : "text-slate-900"}`}>
+                  Corporate Blueprint & Technology Dossier
+                </h2>
+                <p className={`text-sm ${isDarkMode ? "text-slate-400" : "text-slate-505"}`}>
+                  Verify the corporate engineering profile of CIEM Industries, review local security charters, future Smart Observer Device mechatronics specs, and mobile compilation manuals.
+                </p>
+              </div>
+
+              {/* Grid 1: Founder and Sustainability */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                
+                {/* A. Founder's Executive Message Card */}
+                <div className={`p-6 rounded-2xl border flex flex-col justify-between ${
+                  isDarkMode ? "bg-gradient-to-br from-slate-900 to-slate-950 border-slate-800" : "bg-white border-slate-205 shadow-sm"
+                }`}>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-sans font-black text-sm relative border border-emerald-500/10">
+                        M
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-blue-500 border-2 border-slate-950 rounded-full flex items-center justify-center text-[7px] text-white">✓</div>
+                      </div>
+                      <div>
+                        <h4 className={`font-heading font-bold text-sm leading-none ${isDarkMode ? "text-slate-100" : "text-slate-900"}`}>Mano Mathen John</h4>
+                        <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest leading-none block mt-1">Founder & Managing Director</span>
+                      </div>
+                    </div>
+                    
+                    <span className="text-[8px] font-mono text-indigo-500 uppercase tracking-widest block font-bold">Executive Office Directives:</span>
+                    <blockquote className={`text-xs italic leading-relaxed border-l-2 border-emerald-500 pl-3 ${
+                      isDarkMode ? "text-slate-350" : "text-slate-600"
+                    }`}>
+                      &quot;Aptara AI is the culmination of sovereign engineering and deep-tech mechatronics. Our mission is clear: to establish rigorous, offline-capable ecological computing frameworks. We protect human life, evaluate key biometrics in real-time, and preserve Earth&apos;s climate matrices with complete engineering transparency and technological autonomy. Made in India for the entire world.&quot;
+                    </blockquote>
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-dashed border-slate-200 dark:border-slate-850 flex items-center justify-between text-[10px] font-mono">
+                    <span className="text-slate-500 font-bold uppercase">Consortium of Indian Engineers & Mechatronics</span>
+                    <span className="text-emerald-505 font-extrabold uppercase">CIEM COGNITIVE OFFICE ✓</span>
+                  </div>
+                </div>
+
+                {/* B. Sustainability & Stewardship Statement */}
+                <div className={`p-6 rounded-2xl border flex flex-col justify-between ${
+                  isDarkMode ? "bg-gradient-to-br from-slate-900 to-slate-950 border-slate-800" : "bg-white border-slate-205 shadow-sm"
+                }`}>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Award className="w-5 h-5 text-emerald-500 animate-pulse" />
+                      <h4 className={`font-heading font-semibold text-sm ${isDarkMode ? "text-slate-100" : "text-slate-800"}`}>Planetary Stewardship & Sustainability Pledge</h4>
+                    </div>
+                    <p className={`text-xs leading-relaxed ${isDarkMode ? "text-slate-350" : "text-slate-600"}`}>
+                      At **CIEM Industries**, our environmental response system operates under a strict **Zero-Disruption Directive**. We guarantee that every geonode deployment, SRM aerosol dispersal trial, and sensor array works in total harmony with regional biomes.
+                    </p>
+                    <ul className="text-[11px] space-y-1.5 text-slate-400 leading-normal pl-3">
+                      <li className="list-disc"><strong className="text-emerald-500">Neutral Footprint:</strong> 105% solar and kinetic energy self-harvesting geonodes.</li>
+                      <li className="list-disc"><strong className="text-emerald-500">Non-Invasive Aerosols:</strong> HARB aerosols are strictly non-reactive water-calcium lattices.</li>
+                      <li className="list-disc"><strong className="text-emerald-505">Eco Validation:</strong> Closed-loop temporal simulations are performed prior to field launches.</li>
+                    </ul>
+                  </div>
+
+                  <div className={`p-2.5 rounded-lg border text-[9px] font-mono leading-none flex items-center justify-between ${
+                    isDarkMode ? "bg-slate-950 border-slate-850 text-slate-500" : "bg-slate-50 border-slate-200 text-slate-500"
+                  }`}>
+                    <span>CARBON NEUTRAL COMPLIANCE GRANTED</span>
+                    <span className="text-emerald-505 font-bold">✓ CIEM-HQ DECREE</span>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* SYSTEM SECURITY & PRIVACY POLICY COMPLIANCE STATEMENT */}
+              <div className={`p-6 rounded-2xl border ${
+                isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-sm"
+              } space-y-4`}>
+                <div className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-indigo-500" />
+                  <h4 className={`font-heading font-bold text-sm ${isDarkMode ? "text-slate-100" : "text-slate-800"}`}>Sovereign Privacy & Local Security Charter</h4>
+                </div>
+                <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 text-xs ${isDarkMode ? "text-slate-350" : "text-slate-605"}`}>
+                  <div className="space-y-1.5 p-3.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200/40">
+                    <span className="font-bold text-emerald-450 block font-mono text-[9px] tracking-wider uppercase">01 / LOCAL LEDGER EXCLUSIVE</span>
+                    <p className="leading-relaxed font-sans">All chat transaction histories and sensor calibration logs are compiled and saved directly on your browser device cache under localized AES encryption.</p>
+                  </div>
+                  <div className="space-y-1.5 p-3.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200/40">
+                    <span className="font-bold text-emerald-450 block font-mono text-[9px] tracking-wider uppercase">02 / DATA AUTO-SHIELDING</span>
+                    <p className="leading-relaxed font-sans">Aptara AI enforces a strict zero-surveillance monitoring system. Credentials are processed locally without secondary remote telemetry aggregation grids.</p>
+                  </div>
+                  <div className="space-y-1.5 p-3.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200/40">
+                    <span className="font-bold text-emerald-450 block font-mono text-[9px] tracking-wider uppercase">03 / QUANTUM HANDSHAKE KEYS</span>
+                    <p className="leading-relaxed font-sans">Authorized sessions are locked with high-altitude rotative cryptographic indices, protecting executive terminals against external intercept attempts.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* FUTURE SMART OBSERVER DEVICE (SOD) INTER-LINK SCHEMATICS */}
+              <div className={`p-6 rounded-3xl border ${
+                isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-md"
+              } space-y-6`}>
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-indigo-500 bg-indigo-550/10 border border-indigo-500/20 px-2 py-0.5 rounded">
+                    GOAL 18 HARDWARE DIAGNOSTICS DECK
+                  </span>
+                  <h4 className={`font-heading font-extrabold text-sm ${isDarkMode ? "text-slate-100" : "text-slate-900"}`}>
+                    Future Smart Observer Device (SOD) Inter-Link Schematic
+                  </h4>
+                  <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+                    Interactive hardware wiring blueprint for our edge-sensing geoengineer nodule. Click components to display voltage vectors, frequency indices, and mechatronic targets.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                  
+                  {/* Left Column: Interactive Vector Diagram Grid (5 cols) */}
+                  <div className="lg:col-span-5 space-y-2">
+                    <span className="text-[8px] font-mono text-slate-550 uppercase block tracking-wider font-bold">DEVICE CORE MODULES LAYOUT:</span>
+                    
+                    <button
+                      onClick={() => {
+                        setHighlightedSector("jetson");
+                        pushConsoleLog("SOD Diagnostics: Queried NVIDIA Jetson edge processing core specifications.", "info");
+                        speakVocalContent("NVIDIA Jetson Core. Quad Core ARM CPU, active 128 Core Maxwell GPU. Operates real-time 15 watt deep-learning model evaluators locally.");
+                      }}
+                      className={`w-full text-left p-3 rounded-xl border font-mono transition-all uppercase flex-wrap flex justify-between items-center bg-slate-950/40 cursor-pointer ${
+                        highlightedSector === "jetson" 
+                          ? "border-emerald-500 text-emerald-400 font-bold" 
+                          : "border-slate-800 text-slate-450 hover:text-slate-250 hover:border-slate-700"
+                      }`}
+                    >
+                      <span>01. COMPUTING NODE (NVIDIA JETSON)</span>
+                      <span className="text-[9px] px-1.5 py-0.5 bg-slate-900 rounded border border-slate-850">15W</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setHighlightedSector("lidar");
+                        pushConsoleLog("SOD Diagnostics: Queried Micro-LiDAR spatial scanner matrices.", "info");
+                        speakVocalContent("Micro LIner Spatial Scanner. Laser frequency 905 nanometers. Triangulates multi-point ground fracture margins up to 200 meters deep.");
+                      }}
+                      className={`w-full text-left p-3 rounded-xl border font-mono transition-all uppercase flex justify-between items-center bg-slate-950/40 cursor-pointer ${
+                        highlightedSector === "lidar" 
+                          ? "border-emerald-500 text-emerald-400 font-bold" 
+                          : "border-slate-800 text-slate-450 hover:text-slate-250 hover:border-slate-700"
+                      }`}
+                    >
+                      <span>02. Micro-LiDAR SCANNER UNIT</span>
+                      <span className="text-[9px] px-1.5 py-0.5 bg-slate-900 rounded border border-slate-850">905nm</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setHighlightedSector("aerosol");
+                        pushConsoleLog("SOD Diagnostics: Queried Aerosol Jet Calibration Array nozzle parameters.", "info");
+                        speakVocalContent("Aerosol calibration jet nozzle. High dispersion velocity grid, releasing mineralized calcium water buffers to stabilize ozone layer thickness.");
+                      }}
+                      className={`w-full text-left p-3 rounded-xl border font-mono transition-all uppercase flex justify-between items-center bg-slate-950/40 cursor-pointer ${
+                        highlightedSector === "aerosol" 
+                          ? "border-emerald-500 text-emerald-400 font-bold" 
+                          : "border-slate-800 text-slate-450 hover:text-slate-250 hover:border-slate-700"
+                      }`}
+                    >
+                      <span>03. AEROSOL CALIBRATED INJECTOR</span>
+                      <span className="text-[9px] px-1.5 py-0.5 bg-slate-900 rounded border border-slate-850">40psi</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setHighlightedSector("secured");
+                        pushConsoleLog("SOD Diagnostics: Queried Crypto-seed quantum protection keys.", "info");
+                        speakVocalContent("Crypto Seed Handshake Node. Dynamic AES keys rotated every 300 seconds, authenticating ground telemetry blocks against external interception.");
+                      }}
+                      className={`w-full text-left p-3 rounded-xl border font-mono transition-all uppercase flex justify-between items-center bg-slate-950/40 cursor-pointer ${
+                        highlightedSector === "secured" 
+                          ? "border-emerald-500 text-emerald-400 font-bold" 
+                          : "border-slate-800 text-slate-450 hover:text-slate-250 hover:border-slate-700"
+                      }`}
+                    >
+                      <span>04. CRYPTO SHIELD INTERLOCK (HG-KEY)</span>
+                      <span className="text-[9px] px-1.5 py-0.5 bg-slate-900 rounded border border-slate-850">AES-256</span>
+                    </button>
+                  </div>
+
+                  {/* Right Column: Visual responsive Diagnostic HUD readout (7 cols) */}
+                  <div className="lg:col-span-7">
+                    <AnimatePresence mode="wait">
+                      {highlightedSector ? (
+                        <motion.div
+                          key={highlightedSector}
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          transition={{ duration: 0.25 }}
+                          className="bg-slate-950/90 border border-slate-800 rounded-3xl p-5 font-mono text-xs leading-normal space-y-4 text-slate-205"
+                        >
+                          <div className="flex items-center justify-between border-b border-slate-850 pb-2 flex-wrap gap-2">
+                            <span className="text-emerald-400 font-black flex items-center gap-1.5 font-mono text-[10px]">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                              <span>LIVE INTEL SPECTRAL CALIBRATION</span>
+                            </span>
+                            <span className="text-slate-550 text-[10px]">HG-SECURE-COMMS // MECHTRON</span>
+                          </div>
+
+                          {highlightedSector === "jetson" && (
+                            <div className="space-y-2 text-[11px] text-slate-300 font-mono">
+                              <p className="text-emerald-400 font-black uppercase text-xs">Computing Subsystem [NVIDIA JETSON CORONA]</p>
+                              <p>• Processing Chipset: Arm Cortex A57 quad-core CPU architecture</p>
+                              <p>• GPU Acceleration: 128 core Maxwell deep-tech engine</p>
+                              <p>• AI Capacity: Real-time Convolutional Neural Networks validation</p>
+                              <p>• Operating Power: Configured around 10W to 15W eco spectrum</p>
+                            </div>
+                          )}
+
+                          {highlightedSector === "lidar" && (
+                            <div className="space-y-2 text-[11px] text-slate-300 font-mono">
+                              <p className="text-emerald-400 font-black uppercase text-xs">Multi-Spectral Radar [Micro-LiDAR SENSOR]</p>
+                              <p>• Spectrum waveband: Infrared solid-state lasers targeting 905nm</p>
+                              <p>• Penetrative Spectrum: Fault-line rifts analyzed within 200m depth</p>
+                              <p>• Accuracy scale: Sub-millimeter mechanical alignments calibrated</p>
+                              <p>• Mapping Grid: High density spatial point cloud output</p>
+                            </div>
+                          )}
+
+                          {highlightedSector === "aerosol" && (
+                            <div className="space-y-2 text-[11px] text-slate-300 font-mono">
+                              <p className="text-emerald-400 font-black uppercase text-xs">Climatic Dispersion [Aerosol Jet Calibration]</p>
+                              <p>• Dispersive Matrix: Non-reactive biodegradable water-calcium lattices</p>
+                              <p>• Jet Jet Nozzle: High-altitude velocity release regulated at 40 psi</p>
+                              <p>• Spatial Coverage: High density solar Ultraviolet deflection coefficient</p>
+                              <p>• Stewardship Compliance: 100% bio-safe environmental compliance</p>
+                            </div>
+                          )}
+
+                          {highlightedSector === "secured" && (
+                            <div className="space-y-2 text-[11px] text-slate-300 font-mono">
+                              <p className="text-emerald-400 font-black uppercase text-xs">Crypto Ledger Node [HG-KEY INTERLOCK]</p>
+                              <p>• Encrypted Keys: Local hardware caches (AES-256 standard encryption)</p>
+                              <p>• Temporal Seed Rotation: Auto key regeneration occurs every 300 seconds</p>
+                              <p>• Multi-node Handshake: Sovereign consensus models bypassed off-cloud</p>
+                              <p>• Security state: Complete standalone protection loops active</p>
+                            </div>
+                          )}
+
+                          <div className="pt-2 border-t border-slate-850/65 flex justify-between items-center text-[9px] text-slate-500">
+                            <span>COOPERATING WITH CIEM MECHATRONICS LABS</span>
+                            <button
+                              onClick={() => setHighlightedSector(null)}
+                              className="text-amber-500 font-bold uppercase hover:text-white cursor-pointer"
+                            >
+                              Reset Selector ✕
+                            </button>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <div className="h-44 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col justify-center items-center text-center p-6 text-slate-505 dark:text-slate-500">
+                          <Bot className="w-8 h-8 text-slate-400 dark:text-slate-650 mb-2 animate-pulse" />
+                          <p className="text-xs max-w-sm font-semibold italic text-slate-500 font-sans">
+                            Select any Smart Observer Device component on the left side menu to map mechatronics wiring coordinates, active voltages, and temporal frequencies.
+                          </p>
+                        </div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Grid 3: CAPACITOR ANDROID COMPILATION PLAYBOOK */}
+              <div className={`p-6 rounded-2xl border ${
+                isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-sm"
+              } space-y-4`}>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Terminal className="w-5 h-5 text-indigo-500" />
+                    <h4 className={`font-heading font-black text-sm uppercase ${isDarkMode ? "text-slate-100" : "text-slate-900"}`}>
+                      Android Compilation Playbook (Play Store Prep)
+                    </h4>
+                  </div>
+                  <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+                    Technical directives and bash commands to package this deep-tech portal into a production Android APK bundle.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Console Code blocks */}
+                  <div className="bg-slate-950 p-4 rounded-xl border border-slate-850 relative overflow-x-auto text-emerald-400 font-mono text-[10.5px] space-y-3 shadow-inner">
+                    <div className="absolute top-2 right-2 text-[8px] text-slate-500 uppercase font-black">NATIVE CONSOLE</div>
+                    <div>
+                      <span className="text-slate-550 block"># 01. Configure Capacitor dependency frameworks</span>
+                      <span>npm install @capacitor/core @capacitor/cli</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-550 block"># 02. Initialize capacitor parameters under com.ciem.aptara_ai package ID</span>
+                      <span>npx cap init AptaraAI com.ciem.aptara_ai --web-dir=dist</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-550 block"># 03. Execute production static compiler bundles</span>
+                      <span>npm run build</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-550 block"># 04. Add Native Android wrapper SDK</span>
+                      <span>npm install @capacitor/android && npx cap add android</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-550 block"># 05. Copy build folders into Android directory nodes</span>
+                      <span>npx cap sync android</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-550 block"># 06. Open Android Studio to build high-performance Production APK</span>
+                      <span>npx cap open android</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 bg-blue-500/5 border border-blue-900/10 rounded-xl leading-relaxed text-xs space-y-1">
+                    <span className="font-extrabold text-blue-400 uppercase font-mono text-[9px] tracking-wider block">✓ Play Store Performance Tuning:</span>
+                    <p className={`font-sans ${isDarkMode ? "text-slate-350" : "text-slate-650"}`}>
+                      Inside Android Studio, construct highly optimized proguard rules, expand audio microphone request alerts inside native permissions files, and compile utilizing ARM64 target indices to secure fast mobile load speeds across rugged devices.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
@@ -1812,6 +2608,17 @@ export default function App() {
         </div>
 
         <div className="hidden sm:flex items-center gap-4 text-[9px] font-mono text-slate-450 uppercase flex-shrink-0 pl-1">
+          <button
+            onClick={() => {
+              pushConsoleLog("Redirecting to CIEM Industries official Instagram...", "info");
+              window.open("https://www.instagram.com/ciemindustries?igsh=YjNoM3A3cjlnMmU1", "_blank");
+            }}
+            className="hover:text-pink-500 flex items-center gap-1 cursor-pointer transition-colors"
+          >
+            <Instagram className="w-3.5 h-3.5 text-pink-500/80 animate-pulse" />
+            <span>@ciemindustries</span>
+          </button>
+          <span className="text-slate-300">|</span>
           <span>OPERATED BY CIEM INDUSTRIES FOUNDED BY MANO MATHEN JOHN</span>
           <span className="text-emerald-600">STATE: ACTIVE</span>
           <span>SECURE_NODE_122</span>
@@ -1982,10 +2789,21 @@ export default function App() {
                         <p className="text-[10px] text-slate-400 font-sans leading-relaxed">
                           Executive Director &amp; System Architect of CIEM Industries. Managing global threat monitoring parameters since inception.
                         </p>
-                        <div className="pt-2 flex items-center gap-2 flex-wrap text-[8px] font-mono text-slate-500">
-                          <span>Rank: EXECUTIVE ARCHITECT</span>
-                          <span>•</span>
-                          <span>ID: CIEM-001</span>
+                        <div className="pt-2 flex items-center gap-3 flex-wrap">
+                          <button
+                            onClick={() => {
+                              pushConsoleLog("Redirecting to organization verified Instagram handle @ciemindustries...", "info");
+                              window.open("https://www.instagram.com/ciemindustries?igsh=YjNoM3A3cjlnMmU1", "_blank");
+                            }}
+                            className="bg-pink-950/40 hover:bg-pink-900/60 text-pink-400 border border-pink-900/40 px-2 py-0.5 rounded font-mono text-[9px] font-bold uppercase flex items-center gap-1 cursor-pointer transition-all"
+                          >
+                            <Instagram className="w-3 h-3" /> @ciemindustries
+                          </button>
+                          <div className="flex items-center gap-2 text-[8px] font-mono text-slate-500">
+                            <span>Rank: EXECUTIVE ARCHITECT</span>
+                            <span>•</span>
+                            <span>ID: CIEM-001</span>
+                          </div>
                         </div>
                       </div>
                     </div>

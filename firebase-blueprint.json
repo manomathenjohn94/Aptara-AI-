@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Schema for user profiles stored on Firebase Authentication sign-in",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "description": "Email address of the authenticated user" },
+        "name": { "type": "string", "description": "Full display name of the user" },
+        "role": { "type": "string", "description": "System role (Executive Founder, Consortium Partner Node)" },
+        "avatarLetter": { "type": "string", "description": "A single uppercase letter representing the profile avatar" },
+        "updatedAt": { "type": "string", "description": "System time of profile update" }
+      },
+      "required": ["email", "name", "role", "avatarLetter"]
+    },
+    "ChatSession": {
+      "title": "ChatSession",
+      "description": "Workspace session containers containing message subcollections",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "A unique identifier for the session" },
+        "name": { "type": "string", "description": "Custom session label or title" },
+        "category": { "type": "string", "description": "Session category alignment (General, Ozone, Tectonic, Drones)" },
+        "ownerId": { "type": "string", "description": "The UID of the user who owns this session" },
+        "createdAt": { "type": "string", "description": "UTC timestamp of session creation" },
+        "updatedAt": { "type": "string", "description": "UTC timestamp of session modification" }
+      },
+      "required": ["id", "name", "category", "ownerId", "createdAt", "updatedAt"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Individual messages loaded sequentially within a given session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier of the message document" },
+        "role": { "type": "string", "description": "Sovereign sender role (user or model)" },
+        "content": { "type": "string", "description": "Rich markdown semantic content" },
+        "timestamp": { "type": "string", "description": "Local clock timestamp" },
+        "senderId": { "type": "string", "description": "Sender user ID or 'system' role" },
+        "createdAt": { "type": "string", "description": "Engine server timestamp" }
+      },
+      "required": ["id", "role", "content", "timestamp", "senderId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Collection of localized profiles representing system personnel"
+    },
+    "sessions/{sessionId}": {
+      "schema": "ChatSession",
+      "description": "Corporate workspace sessions owned securely by personnel"
+    },
+    "sessions/{sessionId}/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Chronological speech items stored as unbounded subcollections"
+    }
+  }
+}

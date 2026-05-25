@@ -57,6 +57,17 @@ Provide concise, elegant markdown responses, styled as Aptara mainframe output. 
 function generateSimulatedResponse(prompt: string): string {
   const query = prompt.toLowerCase();
   
+  if (query.includes("hg_key") || query.includes("hgkey") || query.includes("hg_") || query.includes("hg key") || query.includes("intiate_hg") || query.includes("initiate hg")) {
+    return `### [APTARA CORE - HARMONIC GEO-GRID (HG) PROTOCOL]
+Aptara HG-Key Initialized successfully! Establishing a secure, quantum-encrypted planetary handshake with the mechatronics tracking nodes.
+
+* **Key Signature**: ` + "`" + `HG-KEY-8829-CIEM-SECURE-HANDSHAKE-INIT` + "`" + `
+* **Cryptographic Seed**: ` + "`" + `SHA-512 // ENTROPY_ACTIVE = true` + "`" + `
+* **Planetary Grid Shielding**: Active synchronization under the **Mano Mathen John** geo-monitoring directive.
+* **Transmission Matrix**: Redirecting operational priority locks to standard **CIEM Industries** secure nodes.
+* **Handshake Result**: ` + "`" + `SUCCESS` + "`" + ` — Core environmental obduction telemetry is now isolated and secure.`;
+  }
+  
   if (query.includes("ciem") || query.includes("who made") || query.includes("creator") || query.includes("developer") || query.includes("made this") || query.includes("builder") || query.includes("founder") || query.includes("inventor") || query.includes("john") || query.includes("mano") || query.includes("investor") || query.includes("funding") || query.includes("funded") || query.includes("backer") || query.includes("sponsor")) {
     return `### [CIEM INDUSTRIES INTEL CORE]
 Aptara is the proprietary vanguard planetary engine designed, engineered, and operated exclusively by **CIEM Industries (Consortium of Indian Engineers and Mechtronics Industries)**.
@@ -136,6 +147,13 @@ app.post("/api/chat", async (req, res) => {
 
     const lastUserMessage = [...messages].reverse().find((m: any) => m.role === "user")?.content || "";
     
+    // Check for HG Key commands early
+    const queryLower = lastUserMessage.toLowerCase();
+    if (queryLower.includes("hg_key") || queryLower.includes("hgkey") || queryLower.includes("hg_") || queryLower.includes("hg key") || queryLower.includes("intiate_hg") || queryLower.includes("initiate hg")) {
+      const reply = generateSimulatedResponse(lastUserMessage);
+      return res.json({ content: reply });
+    }
+
     // Check if Gemini API key exists and is valid
     if (!isApiKeyValid()) {
       // Graceful fallback simulation with user settings notice
