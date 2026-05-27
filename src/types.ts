@@ -34,6 +34,12 @@ export interface DisasterAlert {
   mitigationProgress: number; // 0 to 100
 }
 
+export interface LocalAlert extends DisasterAlert {
+  trendHistory: number[];
+  detectionTime: string;
+  resolvedTime?: string;
+}
+
 export interface GlobalHealthMetrics {
   co2Index: number; // ppm
   globalTemp: number; // Anomaly in C

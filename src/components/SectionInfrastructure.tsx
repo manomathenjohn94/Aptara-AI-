@@ -159,14 +159,14 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
             </div>
 
             <div className="flex justify-between items-center py-1 text-[11px]">
-              <span className="text-slate-500">INDISPENSABLE POWER DRAW</span>
-              <span className="text-blue-400 font-bold">{scrubberGrid.powerDraw}</span>
+               <span className="text-slate-500">INDISPENSABLE POWER DRAW</span>
+               <span className="text-blue-400 font-bold">{scrubberGrid.powerDraw}</span>
             </div>
           </div>
         </div>
 
         {/* Tactical Air/SOD Deployment Tech Specs */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex-1 flex flex-col justify-between shadow-xl">
+        <div className="bg-slate-905 border border-slate-800 rounded-xl p-4 flex-1 flex flex-col justify-between shadow-xl">
           <div>
             <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2 mb-2">
               <Compass className="w-3.5 h-3.5 text-blue-400" />
@@ -180,15 +180,15 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
           <div className="space-y-1.5 font-mono text-[10px] border-t border-slate-800 pt-3">
             <div className="flex justify-between text-slate-500">
               <span>DEPLOYMENT SYSTEM:</span>
-              <span className="text-slate-300 font-medium font-bold">AEROSOL ATOMIZER TYPE-7</span>
+              <span className="text-slate-300 font-bold">AEROSOL ATOMIZER TYPE-7</span>
             </div>
             <div className="flex justify-between text-slate-500">
               <span>SOLAR ABSORBANCE SCALE:</span>
               <span className="text-slate-300 font-medium">0.034 um particle albedo</span>
             </div>
             <div className="flex justify-between text-slate-500">
-              <span>O3 LIFETIME SPHERE:</span>
-              <span className="text-slate-300 font-medium">48-Hour synthetic decay cycle</span>
+               <span>O3 LIFETIME SPHERE:</span>
+               <span className="text-slate-300 font-medium">48-Hour synthetic decay cycle</span>
             </div>
           </div>
         </div>
@@ -202,7 +202,9 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
               <Zap className="w-4 h-4 text-blue-400" />
               SOD Stratospheric Drone Command Suite
             </span>
-            <span className="font-mono text-[10px] text-slate-500 font-normal">Active Shields: 5/5 sectors</span>
+            <span className="font-mono text-[10px] text-slate-500 font-normal">
+              Active Shields: 5/5 sectors
+            </span>
           </h3>
 
           {/* Sector grid */}
@@ -230,8 +232,16 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
                     <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">{sec.code}</span>
                   </div>
                   <div className="mt-1 flex items-center gap-4 text-[10px] text-slate-500 font-mono">
-                    <span className="flex items-center gap-1">OZONE: <strong className={sec.ozoneUnit < 230 ? "text-red-400 font-bold" : sec.ozoneUnit < 280 ? "text-amber-500 font-semibold" : "text-emerald-400 font-semibold"}>{sec.ozoneUnit} DU</strong></span>
-                    <span>DRONES: <strong className="text-slate-300 font-medium">{sec.drones}%</strong></span>
+                    <span className="flex items-center gap-1">
+                      OZONE:{" "}
+                      <strong className={sec.ozoneUnit < 230 ? "text-red-400 font-bold" : sec.ozoneUnit < 280 ? "text-amber-500 font-semibold" : "text-emerald-400 font-semibold"}>
+                        {sec.ozoneUnit} DU
+                      </strong>
+                    </span>
+                    <span>
+                      DRONES:{" "}
+                      <strong className="text-slate-300 font-medium">{sec.drones}%</strong>
+                    </span>
                   </div>
                 </div>
 
@@ -270,7 +280,11 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
                     }`}
                   >
                     <PlaneTakeoff className="w-3.5 h-3.5" />
-                    {sec.activeLaunch ? "COUNTDOWN..." : sec.drones >= 100 ? "MAX DRONES" : "LAUNCH SOD"}
+                    {sec.activeLaunch 
+                      ? "COUNTDOWN..." 
+                      : sec.drones >= 100 
+                        ? "MAX DRONES" 
+                        : "LAUNCH SOD"}
                   </button>
                 </div>
               </div>

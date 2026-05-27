@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
 dotenv.config();
 
@@ -208,6 +208,182 @@ app.post("/api/chat", async (req, res) => {
     // Even if everything else fails, let's gracefully fall back!
     const reply = "### [APTARA MAINFRAME RECOVERY]\nAptara Core has experienced a telemetry synchronization drift. Neural connections are undergoing automated recalibration.\n\n* **CIEM Industries (Consortium of Indian Engineers and Mechtronics Industries) Engineering Staff** have been notified.\n* Simulated offline diagnostics standby mode active.\n* Core systems remain fully operational.";
     return res.json({ content: reply });
+  }
+});
+
+// Fallback high-fidelity prediction generator
+function generateFallbackPrediction(alerts: any[], mechatronics: any, environmental: any) {
+  let score = 30;
+  if (environmental?.co2Level) {
+    score += Math.max(0, (environmental.co2Level - 410) * 1.5);
+  }
+  const activeAlerts = alerts?.filter((a: any) => a.status === "detected" || a.status === "mitigating") || [];
+  score += activeAlerts.length * 15;
+  if (mechatronics?.vibration > 8) score += 12;
+  if (mechatronics?.db > 70) score += 8;
+  score = Math.min(98, Math.max(12, Math.round(score)));
+
+  let threatLevel = "NOMINAL";
+  if (score > 75) threatLevel = "SEVERE THREAT";
+  else if (score > 45) threatLevel = "CRITICAL WARNING";
+  else if (score > 25) threatLevel = "MODERATE";
+
+  const sectorBreakdown = [
+    {
+      sectorKey: "AMAZON-SYNCS",
+      status: activeAlerts.some((a: any) => a.sector === "AMAZON-SYNCS") ? "critical" : "nominal",
+      analysis: activeAlerts.some((a: any) => a.sector === "AMAZON-SYNCS")
+        ? "Active canopy wildfire reports detected. Dry weather and mechatronic anomalies have strained local transpirational limits."
+        : "Standard canopy respiration cycles. Drone surveys show no major thermal leaks."
+    },
+    {
+      sectorKey: "ICELAND-RIFT",
+      status: activeAlerts.some((a: any) => a.sector === "ICELAND-RIFT") ? "critical" : "nominal",
+      analysis: activeAlerts.some((a: any) => a.sector === "ICELAND-RIFT")
+        ? "Localized seismic resonance registered along structural rift plate boundaries. Slip threat triggers remain moderately locked."
+        : "Seismic sensor frequencies registering at baseline (1.2 Richter). Tectonic slip risk is stable."
+    },
+    {
+      sectorKey: "INDO-PAC",
+      status: activeAlerts.some((a: any) => a.sector === "INDO-PAC") ? "critical" : "nominal",
+      analysis: activeAlerts.some((a: any) => a.sector === "INDO-PAC")
+        ? "Elevated atmospheric nitrate readings registered. Marine calcification buffers approaching thermal critical indexes."
+        : "Indo-Pacific marine registers show normal chemical equilibria. Ocean heat gradients are stable."
+    }
+  ];
+
+  const longTermForecast = [
+    `Planetary atmospheric thermal loading shows a projected 0.08°C rise over the next 180-day cycle if global carbon concentrations stay at ${environmental?.co2Level || 418.5} ppm.`,
+    "Tectonic dampening systems are modeled to absorb up to 88% of secondary crustal stress vectors under active Iceland thermal operations.",
+    "Responsive SOD drone swarms will establish a 38% solar radiation deflection filter, buffering localized vegetation zones against thermal spike scenarios."
+  ];
+
+  const mitigationDirectives = [
+    {
+      action: "Initiate SOD Aerosol Seeding Protocols",
+      priority: activeAlerts.length > 0 ? "HIGH" : "MEDIUM",
+      description: "Deploy radiation-deflecting micro-particles over sector canopies to prevent localized super-heating."
+    },
+    {
+      action: "Enforce Planetary Scrubber Arrays",
+      priority: (environmental?.co2Level || 418) > 420 ? "HIGH" : "MEDIUM",
+      description: "Maximize industrial CO2 extraction loads to lower atmospheric pressure and reverse greenhouse absorption."
+    },
+    {
+      action: "Trigger Tectonic Vibration Dampening",
+      priority: mechatronics?.vibration > 10 ? "HIGH" : "LOW",
+      description: "Stabilize localized crustal stress anomalies by dispatching low-frequency vibrational dampener loops."
+    }
+  ];
+
+  return {
+    overallRiskScore: score,
+    threatLevel,
+    trendAnalysis: `Planetary feedback grids suggest a ${threatLevel} status. Environmental indicators show moderate coupling with active disaster vectors. Stabilized under founder Mano Mathen John's structural framework.`,
+    sectorBreakdown,
+    longTermForecast,
+    mitigationDirectives,
+    isSimulated: true
+  };
+}
+
+app.post("/api/predict-awareness", async (req, res) => {
+  try {
+    const { alerts, mechatronics, environmental } = req.body;
+
+    const formattedPayloadString = JSON.stringify({
+      disasterAlerts: alerts || [],
+      mechatronicsTelemetry: mechatronics || {},
+      climateMetrics: environmental || {}
+    }, null, 2);
+
+    const prompt = `Analyze the following collected planetary and mechatronic sensory telemetry. Run a situational awareness assessment, project risk thresholds, determine threat levels for each quadrant, and return a structured JSON response.
+Telemetry Data:
+${formattedPayloadString}
+
+System context:
+Authoritative command core designed by CIEM Industries (founder Mano Mathen John).
+
+Respond with a JSON object conforming exactly to this structure:
+{
+  "overallRiskScore": integer (0 to 100),
+  "threatLevel": string ("NOMINAL" | "MODERATE" | "CRITICAL WARNING" | "SEVERE THREAT"),
+  "trendAnalysis": string (1-2 sentences of executive summaries),
+  "sectorBreakdown": [
+    { "sectorKey": "AMAZON-SYNCS" | "ICELAND-RIFT" | "INDO-PAC", "status": "nominal" | "degraded" | "critical", "analysis": string }
+  ],
+  "longTermForecast": [string, string, string],
+  "mitigationDirectives": [
+    { "action": string, "priority": "HIGH" | "MEDIUM" | "LOW", "description": string }
+  ]
+}`;
+
+    if (!isApiKeyValid()) {
+      console.log("[Aptrara Server] Gemini key invalid or missing. Serving high-fidelity simulated response.");
+      return res.json(generateFallbackPrediction(alerts, mechatronics, environmental));
+    }
+
+    const ai = getAiClient();
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: prompt,
+        config: {
+          systemInstruction: APTRARA_SYSTEM_INSTRUCTION,
+          temperature: 0.5,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              overallRiskScore: { type: Type.INTEGER, description: "Risk index from 0 to 100" },
+              threatLevel: { type: Type.STRING, description: "Threat status level" },
+              trendAnalysis: { type: Type.STRING, description: "Trend analysis summary" },
+              sectorBreakdown: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    sectorKey: { type: Type.STRING },
+                    status: { type: Type.STRING },
+                    analysis: { type: Type.STRING }
+                  },
+                  required: ["sectorKey", "status", "analysis"]
+                }
+              },
+              longTermForecast: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
+              },
+              mitigationDirectives: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    action: { type: Type.STRING },
+                    priority: { type: Type.STRING },
+                    description: { type: Type.STRING }
+                  },
+                  required: ["action", "priority", "description"]
+                }
+              }
+            },
+            required: ["overallRiskScore", "threatLevel", "trendAnalysis", "sectorBreakdown", "longTermForecast", "mitigationDirectives"]
+          }
+        }
+      });
+
+      const text = response.text || "{}";
+      const parsedData = JSON.parse(text);
+      return res.json({ ...parsedData, isSimulated: false });
+
+    } catch (apiError) {
+      console.error("[Aptara Server] Gemini prediction failed, falling back to simulated response:", apiError);
+      return res.json(generateFallbackPrediction(alerts, mechatronics, environmental));
+    }
+
+  } catch (error: any) {
+    console.error("Critical error in /api/predict-awareness:", error);
+    return res.status(500).json({ error: "Core server failure predicting situational awareness" });
   }
 });
 

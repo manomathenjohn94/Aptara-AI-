@@ -1,5 +1,5 @@
 {
-  "name": "APTARA AI Platform",
+  "name": "Aptara AI : A PLANETARY INTELLIGENCE",
   "description": "Premium deep-technology AI platform designed by CIEM Industries (Consortium of Indian Engineers and Mechtronics Industries), led by Mano Mathen John, for sustainable observation, environmental sensor fusion, and planetary intelligence.",
   "requestFramePermissions": ["geolocation", "microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

@@ -2,13 +2,7 @@ import React, { useState } from "react";
 import { AlertTriangle, ShieldCheck, Flame, Loader2, Sparkles, RefreshCw, Layers, MapPin, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { AreaChart, Area, Line, ResponsiveContainer } from "recharts";
-import { DisasterAlert } from "../types";
-
-interface LocalAlert extends DisasterAlert {
-  trendHistory: number[];
-  detectionTime: string;
-  resolvedTime?: string;
-}
+import { DisasterAlert, LocalAlert } from "../types";
 
 const DEFAULT_RESOLVED_HISTORY: LocalAlert[] = [
   {
@@ -37,12 +31,12 @@ const DEFAULT_RESOLVED_HISTORY: LocalAlert[] = [
   }
 ];
 
-function getPastTimeString(minutesAgo: number): string {
+export function getPastTimeString(minutesAgo: number): string {
   const d = new Date(Date.now() - minutesAgo * 60 * 1000);
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
-function getInitialTrend(severity: "low" | "medium" | "high" | "critical"): number[] {
+export function getInitialTrend(severity: "low" | "medium" | "high" | "critical"): number[] {
   switch (severity) {
     case "critical":
       return [90, 94, 91, 95, 93];
@@ -58,44 +52,11 @@ function getInitialTrend(severity: "low" | "medium" | "high" | "critical"): numb
 interface SectionDisasterManagementProps {
   onNotifyLog: (msg: string, type: "info" | "warning" | "success") => void;
   onLocateOnMap?: (sector: string) => void;
+  alerts: LocalAlert[];
+  setAlerts: React.Dispatch<React.SetStateAction<LocalAlert[]>>;
 }
 
-export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }: SectionDisasterManagementProps) {
-  const [alerts, setAlerts] = useState<LocalAlert[]>([
-    {
-      id: "al1",
-      title: "Wildfire Spark Ignited",
-      description: "Severe dryness in Amazon Canopy Sector D-12 has triggered canopy wildfires. Risk index is accelerating.",
-      severity: "high",
-      sector: "AMAZON-SYNCS",
-      status: "detected",
-      mitigationProgress: 0,
-      trendHistory: getInitialTrend("high"),
-      detectionTime: getPastTimeString(12),
-    },
-    {
-      id: "al2",
-      title: "Borehole Tectonic Pressure Rift",
-      description: "Minor seismic frequency slippage along Iceland Ridge. Tectonic strain requires localized structural dampeners.",
-      severity: "medium",
-      sector: "ICELAND-RIFT",
-      status: "detected",
-      mitigationProgress: 0,
-      trendHistory: getInitialTrend("medium"),
-      detectionTime: getPastTimeString(34),
-    },
-    {
-      id: "al3",
-      title: "Atmospheric Acid Rain Gap",
-      description: "Critical nitrate build-up in Indo-Pacific stratosphere over sector delta. Soil acid levels threatening coral indices.",
-      severity: "critical",
-      sector: "INDO-PAC",
-      status: "detected",
-      mitigationProgress: 0,
-      trendHistory: getInitialTrend("critical"),
-      detectionTime: getPastTimeString(3),
-    },
-  ]);
+export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap, alerts, setAlerts }: SectionDisasterManagementProps) {
 
   const [isSimulating, setIsSimulating] = useState(false);
 
@@ -295,9 +256,9 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
 
           <div className="space-y-3 pt-2">
             <button
-              onClick={handleTriggerCrisis}
-              disabled={isSimulating}
-              className="w-full py-2.5 rounded-lg font-mono text-[10px] font-bold bg-rose-650 hover:bg-rose-700 text-white flex items-center justify-center gap-2 border border-rose-700/20 transition-all cursor-pointer disabled:opacity-50 shadow-md"
+               onClick={handleTriggerCrisis}
+               disabled={isSimulating}
+               className="w-full py-2.5 rounded-lg font-mono text-[10px] font-bold bg-rose-650 hover:bg-rose-700 text-white flex items-center justify-center gap-2 border border-rose-700/20 transition-all cursor-pointer disabled:opacity-50 shadow-md"
             >
               {isSimulating ? (
                 <>
@@ -333,7 +294,7 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
             <span className="text-amber-400 font-bold">{alerts.filter(x => x.status === "detected").length} current</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-500">MITIGATIONS IN ACTION:</span>
+            <span className="text-slate-505 text-slate-500">MITIGATIONS IN ACTION:</span>
             <span className="text-blue-400 font-bold animate-pulse">{alerts.filter(x => x.status === "mitigating").length} processing</span>
           </div>
         </div>
@@ -556,7 +517,7 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap }
 
                     {/* Progressive progress bar for active mitigation */}
                     {al.status === "mitigating" && (
-                      <div className="mt-3.5 space-y-1">
+                       <div className="mt-3.5 space-y-1">
                         <div className="flex justify-between text-[9px] font-mono text-slate-500">
                           <span>Aerosol Seeding and Grid Stabilizers active</span>
                           <span>{al.mitigationProgress}% complete</span>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Info, Radio, Network, Flame, ShieldAlert, Check, Smartphone, Compass, Activity, Wifi, Navigation, Eye, RefreshCw, ZoomIn, ZoomOut, Mic, Battery, BatteryCharging, Signal, Brain, Cpu, Play, Pause, Sparkles, Terminal } from "lucide-react";
 import { motion } from "motion/react";
+import { LocalAlert } from "../types";
 
 interface SensorFeed {
   id: string;
@@ -16,6 +17,7 @@ interface SectionSensorFusionProps {
   onNotifyLog: (msg: string, type: "info" | "warning" | "success") => void;
   highlightedSector?: string | null;
   onClearHighlight?: () => void;
+  alerts?: LocalAlert[];
 }
 
 const SECTOR_COORDS: Record<string, { x: number; y: number; name: string }> = {
@@ -38,7 +40,7 @@ const getSectorCoords = (sector: string) => {
   return { x, y, name: sector };
 };
 
-export default function SectionSensorFusion({ onNotifyLog, highlightedSector, onClearHighlight }: SectionSensorFusionProps) {
+export default function SectionSensorFusion({ onNotifyLog, highlightedSector, onClearHighlight, alerts = [] }: SectionSensorFusionProps) {
   const [activeLayer, setActiveLayer] = useState<"thermal" | "seismic" | "wind" | "ozone">("thermal");
   const [selectedSensor, setSelectedSensor] = useState<string | null>(null);
   const [scanSpeed, setScanSpeed] = useState<number>(3); // seconds for radar wipe
@@ -173,6 +175,83 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
 
     return () => clearInterval(interval);
   }, [isAiLearning, mobileConnected, simulateVibration, simulatePitch, simulateRoll, simulateDb, simulateLatency]);
+
+  // Aptara AI Situational Prediction and Foresight States
+  const [prediction, setPrediction] = useState<any>(null);
+  const [isPredicting, setIsPredicting] = useState(false);
+  const [lastPredictionTime, setLastPredictionTime] = useState<string | null>(null);
+  const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
+
+  const loadingPhrases = [
+    "COMPUTING PLANETARY THREAT VECTORS...",
+    "CROSS-REFERENCING MECHATRONIC DRIFTS...",
+    "SYNAPSE RESPONSE CORRELATION LOCK...",
+    "COGNITIVE FORECAST GRADIENTS EXPANDING...",
+    "FORMULATING CIEM INDUSTRIES DIRECTIVES..."
+  ];
+
+  useEffect(() => {
+    if (!isPredicting) return;
+    const interval = setInterval(() => {
+      setLoadingPhraseIndex((prev) => (prev + 1) % loadingPhrases.length);
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [isPredicting]);
+
+  const triggerPrediction = async () => {
+    setIsPredicting(true);
+    onNotifyLog("Initializing Aptara Cognitive Foresight core. Compiling sensor data...", "info");
+    try {
+      const currentVib = gyroDataRef.current 
+        ? Math.sqrt(motionDataRef.current.x * motionDataRef.current.x + motionDataRef.current.y * motionDataRef.current.y + motionDataRef.current.z * motionDataRef.current.z) 
+        : simulateVibration;
+
+      const currentTilt = Math.abs(gyroDataRef.current ? gyroDataRef.current.beta : simulatePitch) + Math.abs(gyroDataRef.current ? gyroDataRef.current.gamma : simulateRoll);
+      const currentDb = decibelDbRef.current || simulateDb;
+      const currentGeo = geoDataRef.current;
+      const currentBattery = batteryLevelRef.current || 87;
+
+      const res = await fetch("/api/predict-awareness", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          alerts: alerts,
+          mechatronics: {
+            vibration: Number(currentVib.toFixed(2)),
+            tilt: Number(currentTilt.toFixed(2)),
+            db: Number(currentDb.toFixed(1)),
+            latency: networkRttRef.current || simulateLatency,
+            battery: currentBattery,
+            deviceConnected: !!gyroDataRef.current,
+            gps: currentGeo ? {
+              latitude: Number(currentGeo.lat.toFixed(5)),
+              longitude: Number(currentGeo.lng.toFixed(5)),
+              accuracy: currentGeo.accuracy,
+              altitude: currentGeo.altitude,
+              speed: currentGeo.speed
+            } : null
+          },
+          environmental: {
+            co2Level: 418.5
+          }
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error(`Mainframe HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      setPrediction(data);
+      setLastPredictionTime(new Date().toLocaleTimeString());
+      onNotifyLog("Planetary situational awareness forecast compiled successfully!", "success");
+    } catch (err: any) {
+      console.error(err);
+      onNotifyLog("Prognostic core telemetry sync drift: Unable to fetch AI predictions.", "warning");
+    } finally {
+      setIsPredicting(false);
+    }
+  };
 
   // High-performance mechatronic telemetry refs to avoid cascading rendering depth loops
   const gyroDataRef = React.useRef<{ alpha: number; beta: number; gamma: number } | null>(null);
@@ -614,7 +693,8 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
   const viewBoxStr = `${minX} ${minY} ${zoomWidth} ${zoomHeight}`;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-full">
+    <div className="space-y-5 flex flex-col h-full">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
       {/* 1. Radar Visual Deck (Main Map Panel) */}
       <div className="lg:col-span-8 bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col justify-between relative overflow-hidden h-[380px] lg:h-auto shadow-2xl cyber-glow-blue">
         {/* Absolute Background Scan Radar Lines */}
@@ -750,6 +830,35 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
                 </g>
               );
             })()}
+
+            {/* Active critical or high severity active disaster alerts */}
+            {alerts
+              .filter(al => (al.status === "detected" || al.status === "mitigating") && (al.severity === "high" || al.severity === "critical"))
+              .map(al => {
+                const coords = getSectorCoords(al.sector);
+                const isCritical = al.severity === "critical";
+                const markerColor = isCritical ? "#ef4444" : "#f97316";
+                return (
+                  <g key={`map-alert-${al.id}`}>
+                    {/* Concentric outer ring sensor lock */}
+                    <circle cx={coords.x} cy={coords.y} r="14" fill="none" stroke={markerColor} strokeWidth="1.25" strokeDasharray="2 1" opacity="0.4" />
+                    {/* Ring Pulse */}
+                    <circle cx={coords.x} cy={coords.y} r="20" fill="none" stroke={markerColor} strokeWidth="0.75" className="animate-ping" style={{ animationDuration: "1.8s" }} />
+                    {/* Core pulsing glowing zone */}
+                    <circle cx={coords.x} cy={coords.y} r="5" fill={markerColor} className="animate-pulse" />
+                    {/* Inner high contrast bead */}
+                    <circle cx={coords.x} cy={coords.y} r="1.5" fill="#ffffff" />
+                    
+                    {/* Mini dynamic threat tag */}
+                    <g transform={`translate(${coords.x - 45}, ${coords.y + 11})`}>
+                      <rect x="0" y="0" width="90" height="13" rx="3" fill="#090d16" stroke={markerColor} strokeWidth="0.75" opacity="0.85" />
+                      <text x="45" y="9" className="text-[6px] font-mono fill-white font-bold" textAnchor="middle">
+                        {isCritical ? "🚨 CRITICAL LOCK" : "⚠️ HIGH THREAT"}
+                      </text>
+                    </g>
+                  </g>
+                );
+              })}
 
             {/* Sensor nodes positioned strategically */}
             {sensors.map((s, idx) => {
@@ -922,7 +1031,7 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
               onClick={() => handleLayerChange("thermal")}
               className={`w-full text-left px-3 py-2.5 rounded-lg border text-xs font-mono transition-all flex items-center justify-between cursor-pointer ${
                 activeLayer === "thermal" 
-                  ? "bg-red-950/40 border-red-800 text-red-400 font-semibold shadow-[0_0_8px_rgba(239,68,68,0.2)]"
+                  ? "bg-red-950/40 border-red-800 text-red-100 font-semibold shadow-[0_0_8px_rgba(239,68,68,0.2)]"
                   : "bg-slate-950/60 border-slate-850 text-slate-400 hover:bg-slate-900/60 hover:text-slate-100"
               }`}
             >
@@ -932,7 +1041,7 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
               </span>
               {activeLayer === "thermal" && <Check className="w-3.5 h-3.5 stroke-[3] text-red-400" />}
             </button>
-
+ 
             <button
               onClick={() => handleLayerChange("seismic")}
               className={`w-full text-left px-3 py-2.5 rounded-lg border text-xs font-mono transition-all flex items-center justify-between cursor-pointer ${
@@ -947,7 +1056,7 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
               </span>
               {activeLayer === "seismic" && <Check className="w-3.5 h-3.5 stroke-[3] text-amber-400" />}
             </button>
-
+ 
             <button
               onClick={() => handleLayerChange("wind")}
               className={`w-full text-left px-3 py-2.5 rounded-lg border text-xs font-mono transition-all flex items-center justify-between cursor-pointer ${
@@ -962,7 +1071,7 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
               </span>
               {activeLayer === "wind" && <Check className="w-3.5 h-3.5 stroke-[3] text-blue-400" />}
             </button>
-
+ 
             <button
               onClick={() => handleLayerChange("ozone")}
               className={`w-full text-left px-3 py-2.5 rounded-lg border text-xs font-mono transition-all flex items-center justify-between cursor-pointer ${
@@ -997,7 +1106,7 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
             )}
           </div>
 
-          <p className="text-[10px] text-slate-400 leading-relaxed font-sans -mt-1.5">
+          <p className="text-[10px] text-slate-400 leading-relaxed font-sans -mt-1.5 font-medium">
             Turn your phone into a mechatronic observation unit. Fuses gyroscope, accelerometer, acoustic microphone, GPS altitude, battery, and signal latency.
           </p>
 
@@ -1007,8 +1116,10 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
                 <div className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
                   <Smartphone className="w-5 h-5 text-slate-400 animate-bounce" style={{ animationDuration: '3s' }} />
                 </div>
-                <div className="text-[10.5px] font-mono text-slate-350">OPERATIONAL STANDBY (SOD-v2 PROT)</div>
-                <p className="text-[10px] text-slate-500 px-4">
+                <div className="text-[10.5px] font-mono text-slate-350">
+                  OPERATIONAL STANDBY (SOD-v2 PROT)
+                </div>
+                <p className="text-[10px] text-slate-500 px-4 leading-normal">
                   Will prompt for orientation, motion, altitude tracking, and microphone acoustics. Grants deep field diagnostic inputs!
                 </p>
               </div>
@@ -1531,6 +1642,238 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
             ))}
           </div>
         </div>
+      </div>
+    </div>
+
+      {/* Aptara AI Situational Prognostic Core */}
+      <div className="bg-slate-900 border border-slate-800/80 rounded-xl p-4 md:p-5 relative overflow-hidden shadow-2xl">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+        
+        {/* Header Block */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-slate-800 pb-4 mb-4 gap-3 relative z-10">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="p-1 px-2 rounded bg-teal-950 text-teal-400 font-mono text-[8px] font-bold tracking-widest border border-teal-900/60 uppercase">CIEM INTEL CORE</span>
+              <span className="text-[10px] font-mono text-slate-500 font-bold">PROGNOSIS MODULE v3.1</span>
+            </div>
+            <h3 className="font-heading text-sm md:text-base font-bold text-slate-100 uppercase tracking-widest mt-1 flex items-center gap-2">
+              <Brain className="w-5 h-5 text-teal-400 animate-pulse" />
+              APTARA AI Situational Prognostic Core
+            </h3>
+            <p className="text-[11px] text-slate-400 font-sans mt-0.5 leading-relaxed">
+              Analyze multi-channel satellite swarms, deep acoustic geological nodes, and SOD mechatronics to predict overall feedback awareness and deploy preemptive mitigations.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 self-stretch md:self-auto">
+            <button
+              onClick={triggerPrediction}
+              disabled={isPredicting}
+              className={`flex-1 md:flex-none py-2.5 px-5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                isPredicting
+                  ? "bg-teal-950/45 text-teal-400 border border-teal-900/60"
+                  : "bg-teal-600 hover:bg-teal-500 border border-teal-500 text-white shadow-lg hover:shadow-teal-900/20"
+              }`}
+            >
+              {isPredicting ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin text-teal-400" />
+                  Predicting...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 text-teal-300" />
+                  ⚡ Compile & Predict Awareness
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Loading state bar */}
+        {isPredicting && (
+          <div className="bg-slate-950/60 border border-slate-850 p-4 rounded-xl flex flex-col items-center justify-center text-center space-y-3 py-10">
+            <div className="relative w-12 h-12 flex items-center justify-center">
+              <span className="absolute inset-0 rounded-full border-2 border-teal-500/20 border-t-2 border-t-teal-400 animate-spin" />
+              <Brain className="w-6 h-6 text-teal-400 animate-pulse" />
+            </div>
+            <div className="space-y-1">
+              <span className="font-mono text-xs text-teal-400 font-bold tracking-widest block animate-pulse">
+                {loadingPhrases[loadingPhraseIndex]}
+              </span>
+              <span className="font-mono text-[9px] text-slate-500 block">
+                Accessing core Indian Engineers & Mechatronics Industries (CIEM) data nodes...
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Placeholder state when no prediction compiled yet */}
+        {!prediction && !isPredicting && (
+          <div className="bg-slate-950/40 border border-slate-850/60 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center space-y-3 py-12">
+            <Cpu className="w-8 h-8 text-indigo-400/80 animate-pulse" />
+            <div className="max-w-md space-y-1">
+              <span className="font-heading text-xs uppercase tracking-wider text-slate-300 font-bold block">Telemetry Standby</span>
+              <span className="text-[11px] text-slate-400 block leading-relaxed font-sans">
+                Aptara AI has not compiled a situational hazard forecast during this session. Hit compile above to coordinate active alerts and real-time mobile calibration parameters into deep analytical forecasts.
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Prognosis Result Dashboard */}
+        {prediction && !isPredicting && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 animate-fadeIn">
+            
+            {/* Box 1: Overall Risk Gauge & Core Summary statement */}
+            <div className="lg:col-span-4 bg-slate-950/60 border border-slate-850 p-4 rounded-xl flex flex-col justify-between">
+              <div>
+                <span className="text-[8px] font-mono text-slate-500 tracking-widest uppercase font-bold block">1. DECISION INDEX</span>
+                <span className="text-xs uppercase font-heading font-extrabold text-slate-350 tracking-wider block mt-1">PLANETARY HAZARD SCORE</span>
+                
+                {/* Visual Gauge Bar */}
+                <div className="my-4 flex items-center gap-4">
+                  <div className="relative w-16 h-16 flex items-center justify-center">
+                    {/* SVG Radial Progress */}
+                    <svg className="w-16 h-16 transform -rotate-90">
+                      <circle cx="32" cy="32" r="28" className="stroke-slate-800" strokeWidth="4" fill="transparent" />
+                      <circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        className={`transition-all duration-1000 ${
+                          prediction.overallRiskScore > 75
+                            ? "stroke-rose-500"
+                            : prediction.overallRiskScore > 45
+                            ? "stroke-orange-500"
+                            : "stroke-emerald-400"
+                        }`}
+                        strokeWidth="4"
+                        fill="transparent"
+                        strokeDasharray={175.9}
+                        strokeDashoffset={175.9 - (175.9 * prediction.overallRiskScore) / 100}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span className="absolute text-base font-mono font-bold text-white">{prediction.overallRiskScore}%</span>
+                  </div>
+
+                  <div>
+                    <span className={`inline-block font-mono text-xs font-bold px-2 py-0.5 rounded border ${
+                      prediction.threatLevel === "SEVERE THREAT"
+                        ? "bg-rose-950/40 text-rose-400 border-rose-900"
+                        : prediction.threatLevel === "CRITICAL WARNING"
+                        ? "bg-orange-950/40 text-orange-400 border-orange-900"
+                        : "bg-emerald-950/40 text-emerald-400 border-emerald-900"
+                    }`}>
+                      {prediction.threatLevel}
+                    </span>
+                    <span className="text-[9px] text-slate-500 block mt-1 uppercase font-mono">Feedback Threshold</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2 mt-4 font-mono leading-relaxed bg-slate-900/40 border border-slate-850/60 p-2.5 rounded text-[10px]">
+                  <span className="text-teal-400 font-bold block">❯ SYSTEM COGNITIVE OVERVIEW:</span>
+                  <p className="text-slate-300 font-sans text-[11px] leading-normal">{prediction.trendAnalysis}</p>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-850/80 pt-3.5 mt-4 flex items-center justify-between text-[9px] text-slate-500 font-mono">
+                <span>Core: CIEM-INTELLIGENCE v3</span>
+                <span>Time: {lastPredictionTime}</span>
+              </div>
+            </div>
+
+            {/* Box 2: Quadrant Hazard Breakdown Analysis */}
+            <div className="lg:col-span-4 bg-slate-950/60 border border-slate-850 p-4 rounded-xl flex flex-col justify-between">
+              <div>
+                <span className="text-[8px] font-mono text-slate-500 tracking-widest uppercase font-bold block">2. REGIONAL FORESIGHT</span>
+                <span className="text-xs uppercase font-heading font-extrabold text-slate-350 tracking-wider block mt-1">QUADRANT PROGNOSES</span>
+
+                <div className="mt-4 space-y-3">
+                  {prediction.sectorBreakdown?.map((quad: any, qIdx: number) => (
+                    <div key={qIdx} className="bg-slate-900/60 border border-slate-850 p-2.5 rounded-lg space-y-1 flex flex-col justify-between">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[9px] text-slate-250 font-bold">{quad.sectorKey}</span>
+                        <span className={`text-[8px] font-mono font-bold px-1.5 py-0.2 rounded border uppercase ${
+                          quad.status === "critical"
+                            ? "bg-rose-950/30 text-rose-400 border-rose-900/50"
+                            : quad.status === "degraded"
+                            ? "bg-amber-950/30 text-amber-500 border-amber-900/50"
+                            : "bg-emerald-950/30 text-emerald-400 border-emerald-900/50"
+                        }`}>
+                          {quad.status}
+                        </span>
+                      </div>
+                      <p className="text-[10.5px] text-slate-400 font-sans leading-relaxed pt-0.5">{quad.analysis}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {prediction.isSimulated && (
+                <div className="text-[8.5px] font-mono text-amber-550/85 bg-amber-950/10 border border-amber-900/15 p-1.5 rounded mt-3 text-center">
+                  * Dynamic simulation running locally under offline standards.
+                </div>
+              )}
+            </div>
+
+            {/* Box 3: Strategic Long-Term Foresight & Actions */}
+            <div className="lg:col-span-4 bg-slate-950/60 border border-slate-850 p-4 rounded-xl flex flex-col justify-between gap-4">
+              <div>
+                <span className="text-[8px] font-mono text-slate-500 tracking-widest uppercase font-bold block">3. PRESCRIPTIVE CORE</span>
+                <span className="text-xs uppercase font-heading font-extrabold text-slate-350 tracking-wider block mt-1">DIRECTIVE DRONE COORDS</span>
+
+                {/* Long term forecasting statement list */}
+                <div className="mt-3.5 space-y-2 bg-slate-900/30 border border-slate-850/40 p-2.5 rounded-lg font-sans">
+                  <span className="text-[7.5px] font-mono text-slate-500 uppercase tracking-wider font-bold block">LONG-RANGE MODULATION MODEL</span>
+                  {prediction.longTermForecast?.map((fc: string, fIdx: number) => (
+                    <div key={fIdx} className="flex gap-1.5 text-[10px] text-slate-300 leading-normal">
+                      <span className="text-teal-400 font-mono mt-0.5">•</span>
+                      <span>{fc}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Mitigation Interactive directives */}
+                <div className="space-y-2 mt-4">
+                  <span className="text-[7.5px] font-mono text-slate-500 uppercase tracking-wider font-bold block">MITIGATION ACTIONS (CIEM FORMULA LOCKS)</span>
+                  <div className="space-y-1.5">
+                    {prediction.mitigationDirectives?.map((mit: any, mIdx: number) => (
+                      <button
+                        key={mIdx}
+                        onClick={() => {
+                          onNotifyLog(`[APTARA EXEC CORE]: Deploying operational formula [${mit.action}] - Dispatching drone swarm vectors... SUCCESS.`, "success");
+                        }}
+                        className="w-full text-left p-2 rounded-lg border border-slate-850 bg-slate-900/50 hover:bg-slate-800 transition-all flex items-start gap-2 group cursor-pointer"
+                      >
+                        <span className={`text-[7.5px] font-mono font-bold px-1 py-0.2 rounded border mt-0.5 ${
+                          mit.priority === "HIGH"
+                            ? "bg-rose-950/40 text-rose-400 border-rose-900"
+                            : mit.priority === "MEDIUM"
+                            ? "bg-amber-950/40 text-amber-400 border-amber-900"
+                            : "bg-teal-950/40 text-teal-400 border-teal-900"
+                        }`}>
+                          {mit.priority}
+                        </span>
+                        <div className="flex-1">
+                          <span className="text-[10px] font-mono font-bold text-slate-200 block group-hover:text-teal-400 transition-all">{mit.action}</span>
+                          <span className="text-[9px] text-slate-400 block leading-tight font-sans mt-0.2">{mit.description}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-[8px] font-mono text-slate-400 italic self-end block text-right mt-1">
+                Founder Mano Mathen John's climate defense matrix code locked.
+              </div>
+            </div>
+
+          </div>
+        )}
       </div>
     </div>
   );

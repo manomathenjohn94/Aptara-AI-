@@ -12,7 +12,8 @@ import { motion, AnimatePresence } from "motion/react";
 import SectionSensorFusion from "./components/SectionSensorFusion";
 import SectionEnvironmental from "./components/SectionEnvironmental";
 import SectionInfrastructure from "./components/SectionInfrastructure";
-import SectionDisasterManagement from "./components/SectionDisasterManagement";
+import SectionDisasterManagement, { getPastTimeString, getInitialTrend } from "./components/SectionDisasterManagement";
+import { LocalAlert } from "./types";
 import AptaraChat from "./components/AptaraChat";
 import CIEMCorporateShowcase from "./components/CIEMCorporateShowcase";
 import AptaraSplashScreen from "./components/AptaraSplashScreen";
@@ -153,6 +154,42 @@ export default function App() {
     return null;
   });
 
+  const [alerts, setAlerts] = useState<LocalAlert[]>(() => [
+    {
+      id: "al1",
+      title: "Wildfire Spark Ignited",
+      description: "Severe dryness in Amazon Canopy Sector D-12 has triggered canopy wildfires. Risk index is accelerating.",
+      severity: "high",
+      sector: "AMAZON-SYNCS",
+      status: "detected",
+      mitigationProgress: 0,
+      trendHistory: getInitialTrend("high"),
+      detectionTime: getPastTimeString(12),
+    },
+    {
+      id: "al2",
+      title: "Borehole Tectonic Pressure Rift",
+      description: "Minor seismic frequency slippage along Iceland Ridge. Tectonic strain requires localized structural dampeners.",
+      severity: "medium",
+      sector: "ICELAND-RIFT",
+      status: "detected",
+      mitigationProgress: 0,
+      trendHistory: getInitialTrend("medium"),
+      detectionTime: getPastTimeString(34),
+    },
+    {
+      id: "al3",
+      title: "Atmospheric Acid Rain Gap",
+      description: "Critical nitrate build-up in Indo-Pacific stratosphere over sector delta. Soil acid levels threatening coral indices.",
+      severity: "critical",
+      sector: "INDO-PAC",
+      status: "detected",
+      mitigationProgress: 0,
+      trendHistory: getInitialTrend("critical"),
+      detectionTime: getPastTimeString(3),
+    },
+  ]);
+
   // Track root theme configurations
   useEffect(() => {
     localStorage.setItem("aptara-dark-mode", isDarkMode ? "true" : "false");
@@ -194,6 +231,8 @@ export default function App() {
     const interval = setInterval(syncUserAuth, 1000);
     return () => clearInterval(interval);
   }, [userProfile]);
+
+
 
   const handleHUDDirectAuthorize = async () => {
     try {
@@ -527,6 +566,8 @@ export default function App() {
 
         {/* Navigation Toggles (Platform Vs Simulator Operating Center, Settings & specifications) */}
         <div className="flex items-center gap-2 flex-wrap">
+
+
           <button
             onClick={() => { setViewMode("platform"); pushConsoleLog("Switched display: Strategic Platform Profile", "info"); }}
             className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
@@ -680,11 +721,11 @@ export default function App() {
                         </h1>
                         
                         <p className="font-heading text-xl sm:text-2xl text-emerald-400 font-semibold tracking-wide leading-snug">
-                          &quot;Intelligence Platform for Sustainable Observation and Planetary Intelligence&quot;
+                          "Intelligence Platform for Sustainable Observation and Planetary Intelligence"
                         </p>
 
                         <p className="text-sm text-slate-300 leading-relaxed">
-                          Building intelligent sensing and AI ecosystems for sustainability, environmental understanding, and responsible planetary intelligence. Designed and operated by <strong className="text-white font-mono font-bold">CIEM Industries (Consortium of Indian Engineers and Mechtronics Industries)</strong>, led by Founder &amp; Inventor <strong className="text-white font-semibold">Mano Mathen John</strong>.
+                          Building intelligent sensing and AI ecosystems for sustainability, environmental understanding, and responsible planetary intelligence. Designed and operated by CIEM Industries (Consortium of Indian Engineers and Mechtronics Industries), led by Founder &amp; Inventor Mano Mathen John.
                         </p>
                       </div>
 
@@ -693,13 +734,17 @@ export default function App() {
                         <div className="space-y-1 bg-slate-950/40 p-4 rounded-xl border border-slate-800/50">
                           <span className="text-[10px] text-slate-400 uppercase font-mono tracking-widest block">Corporate Developer</span>
                           <p className="text-sm font-bold text-white uppercase tracking-wider">CIEM INDUSTRIES</p>
-                          <span className="text-xs text-emerald-400 font-medium block">Consortium of Indian Engineers and Mechtronics Industries</span>
+                          <span className="text-xs text-emerald-400 font-medium block">
+                            Consortium of Indian Engineers and Mechtronics Industries
+                          </span>
                         </div>
                         
                         <div className="space-y-1 bg-slate-950/40 p-4 rounded-xl border border-slate-800/50">
-                          <span className="text-[10px] text-slate-400 uppercase font-mono tracking-widest block">Founder &amp; Inventor</span>
+                          <span className="text-[10px] text-slate-400 uppercase font-mono tracking-widest block font-bold">Founder &amp; Inventor</span>
                           <p className="text-sm font-bold text-white tracking-widest uppercase">Mano Mathen John</p>
-                          <p className="text-xs text-slate-300 leading-relaxed font-sans">Developing intelligent sensing networks that contribute to sustainability and responsible planetary progression.</p>
+                          <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                            Developing intelligent sensing networks that contribute to sustainability and responsible planetary progression.
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -781,7 +826,7 @@ export default function App() {
                     </h3>
                   </div>
                   <p className="text-xs text-slate-450 max-w-sm font-sans leading-normal">
-                    A world-class deep-tech intelligence ecosystem designed to protect Earth&apos;s vital signs in real-time.
+                    A world-class deep-tech intelligence ecosystem designed to protect Earth's vital signs in real-time.
                   </p>
                 </div>
 
@@ -791,20 +836,24 @@ export default function App() {
                     <div className="w-9 h-9 rounded-xl bg-emerald-950/60 border border-emerald-900 flex items-center justify-center text-emerald-400">
                       <Cpu className="w-4.5 h-4.5" />
                     </div>
-                    <h4 className="font-heading font-bold text-sm text-slate-250">ACQUIRE (Smart Obducers)</h4>
+                    <h4 className="font-heading font-bold text-sm text-slate-250">
+                      ACQUIRE (Smart Obducers)
+                    </h4>
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      Physical **Smart Observer Devices (SOD)** on drone swarms, cameras, and terrain nodes capture high-density environmental telemetry.
+                      Physical Smart Observer Devices (SOD) on drone swarms, cameras, and terrain nodes capture high-density environmental telemetry.
                     </p>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-slate-950/40 hover:bg-[#090d16]/70 border border-slate-850 transition-all space-y-2.5 relative">
+                  <div className="p-5 rounded-2xl bg-[#030712] hover:bg-[#090d16]/70 border border-slate-850 transition-all space-y-2.5 relative">
                     <span className="absolute top-4 right-4 font-mono text-[11px] font-bold text-slate-600">STEP 2</span>
                     <div className="w-9 h-9 rounded-xl bg-blue-950/60 border border-blue-900 flex items-center justify-center text-blue-400">
                       <Layers className="w-4.5 h-4.5" />
                     </div>
-                    <h4 className="font-heading font-bold text-sm text-slate-250">FUSE (NVIDIA Edge AI)</h4>
+                    <h4 className="font-heading font-bold text-sm text-slate-250">
+                      FUSE (NVIDIA Edge AI)
+                    </h4>
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      On-site **NVIDIA Jetson Cores** dynamically synthesize LiDAR, Radar, Infrared, and seismic streams to discard noise with zero latency.
+                      On-site NVIDIA Jetson Cores dynamically synthesize LiDAR, Radar, Infrared, and seismic streams to discard noise with zero latency.
                     </p>
                   </div>
 
@@ -813,9 +862,11 @@ export default function App() {
                     <div className="w-9 h-9 rounded-xl bg-emerald-950/60 border border-emerald-900 flex items-center justify-center text-emerald-400">
                       <Globe className="w-4.5 h-4.5 animate-spin-slow" />
                     </div>
-                    <h4 className="font-heading font-bold text-sm text-slate-250">ACTUATE (Planetary AI)</h4>
+                    <h4 className="font-heading font-bold text-sm text-slate-250">
+                      ACTUATE (Planetary AI)
+                    </h4>
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      The core **APTARA AI Engine** predicts critical ecosystem hazards, drives albedo defenses, and guides global sustainability parameters.
+                      The core APTARA AI Engine predicts critical ecosystem hazards, drives albedo defenses, and guides global sustainability parameters.
                     </p>
                   </div>
                 </div>
@@ -1930,18 +1981,25 @@ export default function App() {
                           onNotifyLog={pushConsoleLog} 
                           highlightedSector={highlightedSector}
                           onClearHighlight={() => setHighlightedSector(null)}
+                          alerts={alerts}
                         />
                       )}
                       {activeTab === "environment" && (
-                        <SectionEnvironmental onNotifyLog={pushConsoleLog} />
+                        <SectionEnvironmental 
+                          onNotifyLog={pushConsoleLog} 
+                        />
                       )}
                       {activeTab === "sod" && (
-                        <SectionInfrastructure onNotifyLog={pushConsoleLog} />
+                        <SectionInfrastructure 
+                          onNotifyLog={pushConsoleLog} 
+                        />
                       )}
                       {activeTab === "disaster" && (
                         <SectionDisasterManagement 
                           onNotifyLog={pushConsoleLog} 
                           onLocateOnMap={handleLocateOnMap}
+                          alerts={alerts}
+                          setAlerts={setAlerts}
                         />
                       )}
                     </motion.div>
@@ -2249,9 +2307,9 @@ export default function App() {
                   CIEM SOVEREIGN CREDENTIALS PROTOCOLS
                 </span>
                 <h2 className={`font-heading text-3xl font-bold tracking-tight ${isDarkMode ? "text-white" : "text-slate-900"}`}>
-                  Corporate Blueprint & Technology Dossier
+                  Corporate Blueprint &amp; Technology Dossier
                 </h2>
-                <p className={`text-sm ${isDarkMode ? "text-slate-400" : "text-slate-505"}`}>
+                <p className={`text-sm ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
                   Verify the corporate engineering profile of CIEM Industries, review local security charters, future Smart Observer Device mechatronics specs, and mobile compilation manuals.
                 </p>
               </div>
@@ -2279,7 +2337,7 @@ export default function App() {
                     <blockquote className={`text-xs italic leading-relaxed border-l-2 border-emerald-500 pl-3 ${
                       isDarkMode ? "text-slate-350" : "text-slate-600"
                     }`}>
-                      &quot;Aptara AI is the culmination of sovereign engineering and deep-tech mechatronics. Our mission is clear: to establish rigorous, offline-capable ecological computing frameworks. We protect human life, evaluate key biometrics in real-time, and preserve Earth&apos;s climate matrices with complete engineering transparency and technological autonomy. Made in India for the entire world.&quot;
+                      "\"Aptara AI is the culmination of sovereign engineering and deep-tech mechatronics. Our mission is clear: to establish rigorous, offline-capable ecological computing frameworks. We protect human life, evaluate key biometrics in real-time, and preserve Earth's climate matrices with complete engineering transparency and technological autonomy. Made in India for the entire world.\""
                     </blockquote>
                   </div>
 
@@ -2299,12 +2357,12 @@ export default function App() {
                       <h4 className={`font-heading font-semibold text-sm ${isDarkMode ? "text-slate-100" : "text-slate-800"}`}>Planetary Stewardship & Sustainability Pledge</h4>
                     </div>
                     <p className={`text-xs leading-relaxed ${isDarkMode ? "text-slate-350" : "text-slate-600"}`}>
-                      At **CIEM Industries**, our environmental response system operates under a strict **Zero-Disruption Directive**. We guarantee that every geonode deployment, SRM aerosol dispersal trial, and sensor array works in total harmony with regional biomes.
+                      At CIEM Industries, our environmental response system operates under a strict Zero-Disruption Directive. We guarantee that every geonode deployment, SRM aerosol dispersal trial, and sensor array works in total harmony with regional biomes.
                     </p>
                     <ul className="text-[11px] space-y-1.5 text-slate-400 leading-normal pl-3">
-                      <li className="list-disc"><strong className="text-emerald-500">Neutral Footprint:</strong> 105% solar and kinetic energy self-harvesting geonodes.</li>
-                      <li className="list-disc"><strong className="text-emerald-500">Non-Invasive Aerosols:</strong> HARB aerosols are strictly non-reactive water-calcium lattices.</li>
-                      <li className="list-disc"><strong className="text-emerald-505">Eco Validation:</strong> Closed-loop temporal simulations are performed prior to field launches.</li>
+                      <li className="list-disc"><strong className="text-emerald-500">Neutral Footprint:</strong> 105% solar-powered self-harvesting clean energy nodes.</li>
+                      <li className="list-disc"><strong className="text-emerald-500">Non-Invasive Aerosols:</strong> All active processes use strictly clean, non-harmful materials.</li>
+                      <li className="list-disc"><strong className="text-emerald-500">Eco Validation:</strong> We simulate all trials in the computer first to guarantee safety.</li>
                     </ul>
                   </div>
 

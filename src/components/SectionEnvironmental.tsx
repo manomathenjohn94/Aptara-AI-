@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Sliders, Activity, Thermometer, Wind, Eye, FileSpreadsheet } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { motion } from "motion/react";
+import AbsorptionEfficiencyChart from "./AbsorptionEfficiencyChart";
 
 interface AnimatedCounterProps {
   value: number;
@@ -145,7 +146,7 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
             <Sliders className="w-4 h-4 text-blue-400" />
             Planetary Sandbox Controls
           </h3>
-          <p className="text-[11px] text-slate-450 leading-relaxed font-sans mb-5">
+          <p className="text-[11px] text-slate-350 leading-relaxed font-sans mb-5">
             Aptara allows active geoengineering simulations. Drag controls to toggle synthetic scrubbing loads and Solar Radiation Management (SRM) to watch trends balance.
           </p>
           
@@ -153,7 +154,9 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
             {/* Control 1: Scrubber load */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="font-sans text-xs text-slate-300 font-medium">Carbon Scrubber Arrays</span>
+                <span className="font-sans text-xs text-slate-300 font-medium">
+                  Carbon Scrubber Arrays
+                </span>
                 <span className="font-mono text-xs text-blue-400 font-bold">{scrubberLoad}%</span>
               </div>
               <input
@@ -173,7 +176,9 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
             {/* Control 2: Aerosol SRM and Dust */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="font-sans text-xs text-slate-300 font-medium">Reflective Stratosphere Aerosol (SRM)</span>
+                <span className="font-sans text-xs text-slate-300 font-medium">
+                  Reflective Stratosphere Aerosol (SRM)
+                </span>
                 <span className="font-mono text-xs text-blue-400 font-bold">{srmInjection}%</span>
               </div>
               <input
@@ -215,7 +220,9 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* Card 1: CO2 */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue">
-            <span className="font-mono text-[9px] text-slate-450 tracking-wider">ATM ATMOSPHERIC CO2</span>
+            <span className="font-mono text-[9px] text-slate-450 tracking-wider">
+              ATM ATMOSPHERIC CO2
+            </span>
             <div className="mt-2 flex items-baseline gap-1">
               <span className="font-heading text-xl font-bold text-slate-100">
                 <AnimatedCounter value={co2Level} decimals={1} />
@@ -247,7 +254,7 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
 
           {/* Card 3: Glacier Melt */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue">
-            <span className="font-mono text-[9px] text-slate-450 tracking-wider flex items-center gap-1">
+            <span className="font-mono text-[9px] text-slate-455 tracking-wider flex items-center gap-1">
               <Wind className="w-3 h-3 text-blue-400" />
               POLAR ICE COVERAGE
             </span>
@@ -257,12 +264,16 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
               </span>
               <span className="font-mono text-[10px] text-slate-400">%</span>
             </div>
-            <span className="block text-[9px] font-mono text-slate-500 mt-1 font-semibold">Ref Baseline 1990</span>
+            <span className="block text-[9px] font-mono text-slate-500 mt-1 font-semibold">
+              Ref Baseline 1990
+            </span>
           </div>
 
           {/* Card 4: Ecosystem stability */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue">
-            <span className="font-mono text-[9px] text-slate-450 tracking-wider">ECOSYSTEM HEALTH</span>
+          <div className="bg-slate-900 border border-slate-850 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue">
+            <span className="font-mono text-[9px] text-slate-450 tracking-wider">
+              ECOSYSTEM HEALTH
+            </span>
             <div className="mt-2 flex items-baseline gap-1">
               <span className="font-heading text-xl font-bold text-slate-100">
                 <AnimatedCounter value={biodiversity} decimals={3} />
@@ -277,7 +288,7 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
 
         {/* Dynamic Interactive Recharts Graph */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex-1 h-[240px] md:h-auto flex flex-col justify-between min-h-[220px] shadow-xl">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <h4 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2">
               <Activity className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
               Planetary Vector Projection (Simulated Climate Trend)
@@ -359,6 +370,9 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
             )}
           </motion.div>
         </div>
+
+        {/* CO2 Absorption Efficiency Model Chart */}
+        <AbsorptionEfficiencyChart scrubberLoad={scrubberLoad} />
       </div>
     </div>
   );
