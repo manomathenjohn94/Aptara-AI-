@@ -242,9 +242,18 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap, 
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-full">
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-full"
+    >
       {/* Simulation Command Center */}
-      <div className="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-xl">
+      <motion.div 
+        whileHover={{ scale: 1.002, borderColor: "#334155" }}
+        transition={{ duration: 0.3 }}
+        className="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-xl transition-all duration-300"
+      >
         <div>
           <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2 mb-3">
             <Layers className="w-4 h-4 text-blue-400" />
@@ -298,7 +307,7 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap, 
             <span className="text-blue-400 font-bold animate-pulse">{alerts.filter(x => x.status === "mitigating").length} processing</span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Operational alert ledger & Resolved History Archive */}
       <div className="lg:col-span-8 flex flex-col gap-6">
@@ -634,6 +643,6 @@ export default function SectionDisasterManagement({ onNotifyLog, onLocateOnMap, 
         </div>
 
       </div>
-    </div>
+    </motion.div>
   );
 }

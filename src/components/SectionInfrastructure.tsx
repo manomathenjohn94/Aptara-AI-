@@ -123,11 +123,20 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
   }, [onNotifyLog]);
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 h-full">
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="grid grid-cols-1 xl:grid-cols-12 gap-5 h-full"
+    >
       {/* 1. Global Infrastructure Asset Stats */}
       <div className="xl:col-span-4 flex flex-col gap-4">
         {/* Core Cells Status Board */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
+        <motion.div 
+          whileHover={{ scale: 1.01, borderColor: "#334155" }}
+          transition={{ duration: 0.2 }}
+          className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl transition-all duration-300"
+        >
           <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2 mb-3">
             <Cpu className="w-4 h-4 text-blue-400" />
             Macro Infrastructure Status
@@ -163,10 +172,14 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
                <span className="text-blue-400 font-bold">{scrubberGrid.powerDraw}</span>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Tactical Air/SOD Deployment Tech Specs */}
-        <div className="bg-slate-905 border border-slate-800 rounded-xl p-4 flex-1 flex flex-col justify-between shadow-xl">
+        <motion.div 
+          whileHover={{ scale: 1.01, borderColor: "#334155" }}
+          transition={{ duration: 0.2 }}
+          className="bg-slate-905 border border-slate-800 rounded-xl p-4 flex-1 flex flex-col justify-between shadow-xl transition-all duration-300"
+        >
           <div>
             <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2 mb-2">
               <Compass className="w-3.5 h-3.5 text-blue-400" />
@@ -191,11 +204,15 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
                <span className="text-slate-300 font-medium">48-Hour synthetic decay cycle</span>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* 2. Stratosphere Sec Area & Swarm Deployments */}
-      <div className="xl:col-span-8 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-xl">
+      <motion.div 
+        whileHover={{ scale: 1.002, borderColor: "#1e293b" }}
+        transition={{ duration: 0.3 }}
+        className="xl:col-span-8 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-xl transition-all duration-300"
+      >
         <div>
           <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center justify-between mb-4">
             <span className="flex items-center gap-2">
@@ -307,7 +324,7 @@ export default function SectionInfrastructure({ onNotifyLog }: SectionInfrastruc
             ))}
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

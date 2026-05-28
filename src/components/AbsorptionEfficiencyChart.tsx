@@ -80,7 +80,11 @@ export default function AbsorptionEfficiencyChart({ scrubberLoad }: AbsorptionEf
   }, [timeline, scrubberLoad, metrics]);
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-5 flex flex-col gap-4 shadow-xl relative overflow-hidden">
+    <motion.div 
+      whileHover={{ scale: 1.002, borderColor: "#334155" }}
+      transition={{ duration: 0.3 }}
+      className="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-5 flex flex-col gap-4 shadow-xl relative overflow-hidden transition-all duration-300"
+    >
       {/* Background cyber accent paths */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -274,6 +278,6 @@ export default function AbsorptionEfficiencyChart({ scrubberLoad }: AbsorptionEf
           </p>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

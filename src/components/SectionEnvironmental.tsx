@@ -138,9 +138,18 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
       onNotifyLog(`Albedo SRM parameters adapted to ${val}%. Calibrating planetary cloud deflection.`, "info");
     }
   };  return (
-    <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 h-full">
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="grid grid-cols-1 xl:grid-cols-12 gap-5 h-full"
+    >
       {/* Simulation Controls Sidebar */}
-      <div className="xl:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-2xl">
+      <motion.div 
+        whileHover={{ scale: 1.002, borderColor: "#334155" }}
+        transition={{ duration: 0.3 }}
+        className="xl:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-2xl transition-all duration-300"
+      >
         <div>
           <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2 mb-3">
             <Sliders className="w-4 h-4 text-blue-400" />
@@ -212,14 +221,18 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
             <span className="text-slate-300 font-semibold">+{ (srmInjection * 0.007).toFixed(3) } avg reflectivity</span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Climate Telemetry Dashboard */}
       <div className="xl:col-span-8 flex flex-col gap-4">
         {/* Vital Snapshot Panels */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* Card 1: CO2 */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue">
+          <motion.div 
+            whileHover={{ scale: 1.02, borderColor: "#2563eb" }}
+            transition={{ duration: 0.2 }}
+            className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue transition-all duration-300 cursor-pointer"
+          >
             <span className="font-mono text-[9px] text-slate-450 tracking-wider">
               ATM ATMOSPHERIC CO2
             </span>
@@ -232,10 +245,14 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
             <span className={`block text-[9px] font-mono mt-1 font-semibold ${co2Level < 420 ? 'text-emerald-400' : 'text-amber-400'}`}>
               {co2Level < 422 ? '▼ ABSORPTION PHASE' : '▲ CONCENTRATION CREEP'}
             </span>
-          </div>
+          </motion.div>
 
           {/* Card 2: Thermal Anomalies */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue">
+          <motion.div 
+            whileHover={{ scale: 1.02, borderColor: "#ea580c" }}
+            transition={{ duration: 0.2 }}
+            className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue transition-all duration-300 cursor-pointer"
+          >
             <span className="font-mono text-[9px] text-slate-450 tracking-wider flex items-center gap-1">
               <Thermometer className="w-3 h-3 text-red-400 animate-pulse" />
               THERMAL SHIFT
@@ -250,10 +267,14 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
             <span className={`block text-[9px] font-mono mt-1 font-semibold ${tempAnomaly < 1.10 ? 'text-emerald-400' : 'text-amber-400'}`}>
               {tempAnomaly < 1.15 ? '✔ COOLING VECTOR' : '☕ THERMAL ACCRETION'}
             </span>
-          </div>
+          </motion.div>
 
           {/* Card 3: Glacier Melt */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue">
+          <motion.div 
+            whileHover={{ scale: 1.02, borderColor: "#3b82f6" }}
+            transition={{ duration: 0.2 }}
+            className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue transition-all duration-300 cursor-pointer"
+          >
             <span className="font-mono text-[9px] text-slate-455 tracking-wider flex items-center gap-1">
               <Wind className="w-3 h-3 text-blue-400" />
               POLAR ICE COVERAGE
@@ -267,10 +288,14 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
             <span className="block text-[9px] font-mono text-slate-500 mt-1 font-semibold">
               Ref Baseline 1990
             </span>
-          </div>
+          </motion.div>
 
           {/* Card 4: Ecosystem stability */}
-          <div className="bg-slate-900 border border-slate-850 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue">
+          <motion.div 
+            whileHover={{ scale: 1.02, borderColor: "#059669" }}
+            transition={{ duration: 0.2 }}
+            className="bg-slate-900 border border-slate-850 rounded-xl p-3.5 flex flex-col justify-between shadow-lg cyber-glow-blue transition-all duration-300 cursor-pointer"
+          >
             <span className="font-mono text-[9px] text-slate-450 tracking-wider">
               ECOSYSTEM HEALTH
             </span>
@@ -283,11 +308,15 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
             <span className={`block text-[9px] font-mono mt-1 font-bold ${biodiversity > 0.72 ? 'text-emerald-400' : 'text-red-400'}`}>
               {biodiversity > 0.72 ? '● STABILIZED' : '▲ THREAT METRIC'}
             </span>
-          </div>
+          </motion.div>
         </div>
 
         {/* Dynamic Interactive Recharts Graph */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex-1 h-[240px] md:h-auto flex flex-col justify-between min-h-[220px] shadow-xl">
+        <motion.div 
+          whileHover={{ scale: 1.002, borderColor: "#1e293b" }}
+          transition={{ duration: 0.3 }}
+          className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex-1 h-[240px] md:h-auto flex flex-col justify-between min-h-[220px] shadow-xl transition-all duration-300"
+        >
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <h4 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2">
               <Activity className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
@@ -369,11 +398,11 @@ export default function SectionEnvironmental({ onNotifyLog }: SectionEnvironment
               </ResponsiveContainer>
             )}
           </motion.div>
-        </div>
+        </motion.div>
 
         {/* CO2 Absorption Efficiency Model Chart */}
         <AbsorptionEfficiencyChart scrubberLoad={scrubberLoad} />
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -693,10 +693,19 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
   const viewBoxStr = `${minX} ${minY} ${zoomWidth} ${zoomHeight}`;
 
   return (
-    <div className="space-y-5 flex flex-col h-full">
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="space-y-5 flex flex-col h-full"
+    >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
       {/* 1. Radar Visual Deck (Main Map Panel) */}
-      <div className="lg:col-span-8 bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col justify-between relative overflow-hidden h-[380px] lg:h-auto shadow-2xl cyber-glow-blue">
+      <motion.div 
+        whileHover={{ scale: 1.002, borderColor: "#3b82f6" }}
+        transition={{ duration: 0.3 }}
+        className="lg:col-span-8 bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col justify-between relative overflow-hidden h-[380px] lg:h-auto shadow-2xl cyber-glow-blue"
+      >
         {/* Absolute Background Scan Radar Lines */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.25] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-950/80 via-slate-950 to-black" />
         <div className="absolute inset-0 pointer-events-none opacity-[0.2] bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] cyber-grid" />
@@ -1012,12 +1021,16 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* 2. Control & Table Panel */}
       <div className="lg:col-span-4 flex flex-col gap-4">
         {/* Layer Selections */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-3 shadow-xl">
+        <motion.div 
+          whileHover={{ scale: 1.01, borderColor: "#334155" }}
+          transition={{ duration: 0.2 }}
+          className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-3 shadow-xl transition-all duration-300"
+        >
           <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 flex items-center gap-2">
             <Network className="w-3.5 h-3.5 text-blue-400" />
             Planetary Feed Layers
@@ -1087,10 +1100,14 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
               {activeLayer === "ozone" && <Check className="w-3.5 h-3.5 stroke-[3] text-emerald-400" />}
             </button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Handheld Spatial Telemetry Interlink Card */}
-        <div className="bg-slate-950 border border-slate-800 text-white rounded-xl p-4 flex flex-col gap-3 shadow-lg relative overflow-hidden">
+        <motion.div 
+          whileHover={{ scale: 1.01, borderColor: "#10b981" }}
+          transition={{ duration: 0.2 }}
+          className="bg-slate-950 border border-slate-800 text-white rounded-xl p-4 flex flex-col gap-3 shadow-lg relative overflow-hidden transition-all duration-300"
+        >
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
           
@@ -1610,10 +1627,14 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
               </button>
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Local Telemetry Station Grid */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-2 flex-grow overflow-y-auto max-h-[300px] lg:max-h-none shadow-xl">
+        <motion.div 
+          whileHover={{ scale: 1.01, borderColor: "#334155" }}
+          transition={{ duration: 0.2 }}
+          className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-2 flex-grow overflow-y-auto max-h-[300px] lg:max-h-none shadow-xl transition-all duration-300"
+        >
           <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-slate-200 mb-1">
             Sensor Grid Status
           </h3>
@@ -1641,12 +1662,16 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
 
       {/* Aptara AI Situational Prognostic Core */}
-      <div className="bg-slate-900 border border-slate-800/80 rounded-xl p-4 md:p-5 relative overflow-hidden shadow-2xl">
+      <motion.div 
+        whileHover={{ scale: 1.002, borderColor: "#14b8a6" }}
+        transition={{ duration: 0.3 }}
+        className="bg-slate-900 border border-slate-800/80 rounded-xl p-4 md:p-5 relative overflow-hidden shadow-2xl transition-all duration-300"
+      >
         <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
         
@@ -1874,7 +1899,7 @@ export default function SectionSensorFusion({ onNotifyLog, highlightedSector, on
 
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

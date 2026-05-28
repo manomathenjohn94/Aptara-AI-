@@ -5,7 +5,7 @@ import {
   ArrowRight, Brain, Eye, Compass, GitMerge, Layers, Shield,
   Network, CheckCircle, Flame, Droplets, MapPin, Sparkles, 
   Mail, Users, TrendingUp, Info, Send, MessageSquare, PhoneCall, Search, Instagram,
-  Settings, Moon, Sun, Lock, Award, BookOpen, Volume2
+  Settings, Moon, Sun, Lock, Award, BookOpen, Volume2, FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -13,6 +13,7 @@ import SectionSensorFusion from "./components/SectionSensorFusion";
 import SectionEnvironmental from "./components/SectionEnvironmental";
 import SectionInfrastructure from "./components/SectionInfrastructure";
 import SectionDisasterManagement, { getPastTimeString, getInitialTrend } from "./components/SectionDisasterManagement";
+import SectionSystemReports from "./components/SectionSystemReports";
 import { LocalAlert } from "./types";
 import AptaraChat from "./components/AptaraChat";
 import CIEMCorporateShowcase from "./components/CIEMCorporateShowcase";
@@ -139,7 +140,7 @@ export function IndianFlagSvg({ className = "w-6 h-4" }: { className?: string })
 
 export default function App() {
   const [viewMode, setViewMode] = useState<"platform" | "operations" | "settings" | "about">("platform");
-  const [activeTab, setActiveTab] = useState<"fusion" | "environment" | "sod" | "disaster">("fusion");
+  const [activeTab, setActiveTab] = useState<"fusion" | "environment" | "sod" | "disaster" | "reports">("fusion");
   const [heroMousePos, setHeroMousePos] = useState({ x: 0, y: 0 });
   
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -1909,10 +1910,8 @@ export default function App() {
             >
               
               {/* Left Side: Modular Dashboard Controls */}
-              <div className="lg:col-span-8 flex flex-col gap-4">
-                
-                {/* Tab selections */}
-                <div className="bg-[#090d16] border border-slate-800 p-1 rounded-xl flex gap-1">
+              <div className="lg:col-span-8 flex flex-col gap-4">                 {/* Tab selections */}
+                <div className="bg-[#090d16] border border-slate-800 p-1 rounded-xl flex gap-1 flex-wrap md:flex-nowrap">
                   <button
                     onClick={() => { setActiveTab("fusion"); pushConsoleLog("Switched primary module to: [SENSOR FUSION] monitoring", "info"); }}
                     className={`flex-1 py-2.5 rounded-lg font-heading text-xs font-bold uppercase flex items-center justify-center gap-2 transition-all cursor-pointer ${
@@ -1963,6 +1962,18 @@ export default function App() {
                       <span className="absolute -top-0.5 -right-0.5 sm:top-1.5 sm:right-2 w-2 h-2 rounded-full bg-red-400 animate-pulse" />
                     )}
                   </button>
+
+                  <button
+                    onClick={() => { setActiveTab("reports"); pushConsoleLog("Switched primary module to: [SYSTEM REPORTS] operational audits", "info"); }}
+                    className={`flex-1 py-2.5 rounded-lg font-heading text-xs font-bold uppercase flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                      activeTab === "reports"
+                        ? "bg-slate-900 border border-slate-800 text-emerald-400 font-mono shadow-md"
+                        : "text-slate-500 hover:text-slate-300 hover:bg-slate-950/40"
+                    }`}
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">System Reports</span>
+                  </button>
                 </div>
 
                 {/* Core content rendering viewport */}
@@ -2000,6 +2011,11 @@ export default function App() {
                           onLocateOnMap={handleLocateOnMap}
                           alerts={alerts}
                           setAlerts={setAlerts}
+                        />
+                      )}
+                      {activeTab === "reports" && (
+                        <SectionSystemReports 
+                          onNotifyLog={pushConsoleLog} 
                         />
                       )}
                     </motion.div>
